@@ -9,7 +9,7 @@ ElastiCache for Redisを触ったので、備忘録。
 - RedisではデータをKey:Valueの形式で保存する。従来のキーバリューストアとは異なり、文字列以外の様々なデータ構造を格納することができる。
 - データはHDDやSSDなどのディスクではなく、メモリに蓄積される。したがってレイテンシーが非常に小さい。
 
-<ユースケース>
+## ユースケース
 1. リアルタイム処理などにおいて、レイテンシーの少ないDBとして使用する  
 ※この場合データを永続化できるRedisを使用するとよさそう
 1. セッションIDなど一時的なデータの管理を行うDBとして使用する
@@ -126,7 +126,7 @@ ElastiCacheダッシュボードにて、**[Redis]** > **[作成]**　を選択�
 # 確認
 ## redis-cliのインストール
 今回はredis-cliの4.0をインストールする。
-```
+```bash
 $ sudo amazon-linux-extras install redis4.0
 $ which redis-cli
 ```
@@ -135,8 +135,8 @@ $ which redis-cli
 EC2にSSHログインする。
 
 以下コマンドを実行し、Redisへ接続をする。
-```
-$ redis-cli -h "ElastiCacheのプライマリエンドポイント" -p 6379
+```bash
+$ redis-cli -h <ElastiCacheのプライマリエンドポイント> -p 6379
 ※プライマリエンドポイントの":6379"を含めないこと。
 ```
 
@@ -155,7 +155,7 @@ $ get word => "hello"
 |---|---|
 |rpush <key> <value>|keyに対するvalueをList型で登録する|
 |lrange <key> <start> <end>|List型のkeyに対するvalueを取得する。先頭の要素を0, 2番目の要素を1として扱う|
-```
+```bash
 > rpush user hoge => (integer) 1
 > rpush user piyo => (integer) 2
 > lrange user 0 1
@@ -163,14 +163,14 @@ $ get word => "hello"
 2) "piyo"
 ```
 登録したkeyは*keys <key>*で取得することができる。
-```
-keys *
+```bash
+> keys *
 1) "user"
 2) "word"
 ```
 以下のコマンドでredis-cliを終了する。
-```
-exit
+```bash
+> exit
 ```
 
 # リソースの削除
@@ -194,9 +194,6 @@ exit
 |---|---|
 |Subnet|redis-handson-<今日の日付>-pub|
 |Subnet|redis-handson-<今日の日付>-prv|
-
- 
-
 
 # まとめ
 今回はElastiCacheの構築から初歩的なredis-cliの操作までハンズオン形式でご紹介しました。
