@@ -1,0 +1,189 @@
+# 以下のAWSリソースを作成するYamlファイルです。
+# VPC * 1 InternetGW *1
+# PublicSubnet * 1, RouteTable * 1
+# EC2 * 1, SecurityGroup * 1
+
+Parameters:
+  YYYYMMDD:
+    Description: Input the date. ex) 20200701
+    Type: String
+  HandsonName:
+    Description: Input the handson name.
+    Type: String
+    Default: String #入力箇所
+    AllowedValues: 
+      - String #入力
+
+# VPC
+  VpcCidrBlock:
+    Description: Input a VPC IPv4 CidrBlock. ex) 192.168.2.0/24
+    Type: String
+
+# Public Subnet
+  AZ:
+    Description: Input a AZ where Public Subnet will be created.
+    Type: AWS::EC2::AvailabilityZone::Name
+  PublicSubnetCidrBlock:
+    Description: Input a Public Subnet IPv4 CidrBlock.  ex) 192.168.2.0/25
+    Type: String
+
+# Internet GW
+
+# RouteTable for Public Subnet
+
+# EC2
+  AmiId:
+    Description: Enter the ami-id. Default is AmazonLinux2 of quick start
+    Type: String
+    Default: ami-0a1c2ec61571737db
+
+  InstanceType:
+    Description: Enter the instance type
+    Type: String
+    Default: t3.micro
+
+  KeyPair:
+    Description: Enter the key pair
+    Type: "AWS::EC2::KeyPair::KeyName"
+
+Resources:
+# VPC
+  MyVPC:
+    Type: AWS::EC2::VPC
+    Properties: 
+      CidrBlock: !Ref VpcCidrBlock
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      Tags: 
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref YYYYMMDD
+              - !Ref HandsonName
+              - vpc
+
+# PublicSubnet
+  MyPublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties: 
+      AvailabilityZone: !Ref AZ
+      CidrBlock: !Ref PublicSubnetCidrBlock
+      MapPublicIpOnLaunch: true
+      VpcId: !Ref MyVPC
+      Tags: 
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref YYYYMMDD
+              - !Ref HandsonName
+              - pub-sub
+
+# InternetGW
+  MyInternetGW:
+    Type: AWS::EC2::InternetGateway
+    Properties: 
+      Tags: 
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref YYYYMMDD
+              - !Ref HandsonName
+              - igw
+  
+  MyVPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties: 
+      InternetGatewayId: !Ref MyInternetGW
+      VpcId: !Ref MyVPC
+
+# RouteTable for Public Subnet
+  MyRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties: 
+      VpcId: !Ref MyVPC
+      Tags: 
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref YYYYMMDD
+              - !Ref HandsonName
+              - pub-rtb
+
+  MyPublicRoute:
+    Type: AWS::EC2::Route
+    Properties: 
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref MyInternetGW
+      RouteTableId: !Ref MyRouteTable
+
+  MySubnetRouteTableAssociation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties: 
+        RouteTableId: !Ref MyRouteTable
+        SubnetId: !Ref MyPublicSubnet
+
+# EC2
+  MyEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties: 
+      EbsOptimized: true
+      # IamInstanceProfile: #入力
+      DisableApiTermination: false
+      InstanceInitiatedShutdownBehavior: stop
+      Monitoring: false
+      Tenancy: default
+      ImageId: !Ref AmiId
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyPair
+      BlockDeviceMappings: 
+        - DeviceName: /dev/xvda
+          Ebs: 
+            VolumeSize: 8
+            VolumeType: gp2
+            DeleteOnTermination: true
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: false
+          DeleteOnTermination: true
+          GroupSet: 
+            - !Ref MySecurityGroup
+          DeviceIndex: 0
+          SubnetId: !Ref MyPublicSubnet
+      Tags: 
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref YYYYMMDD
+              - !Ref HandsonName
+              - ap # 入力箇所
+      # UserData: String
+
+# SG # 入力箇所
+  MySecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      VpcId: !Ref MyVPC
+      GroupDescription: !Join
+        - " "
+        - - Security Group attached to
+          - !Join
+            - "-"
+            - - !Ref YYYYMMDD
+              - !Ref HandsonName
+              - ap
+      GroupName: !Join
+        - "_"
+        - - sg
+          - !Join
+            - "-"
+            - - !Ref YYYYMMDD
+              - !Ref HandsonName
+              - ap
+      SecurityGroupIngress: # 入力
+        -   CidrIp: 0.0.0.0/0
+            Description: SSH port
+            FromPort: 22
+            IpProtocol: tcp
+            # SourceSecurityGroupId: String
+            # SourceSecurityGroupName: String
+            ToPort: 22
