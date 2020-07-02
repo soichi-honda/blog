@@ -40,7 +40,7 @@ CloudFormationテンプレ―トを使用して、以下の環境を構築しま
 
 使用するテンプレートファイルです
 
-[cf_template.yaml]
+[cfn_template.yaml]
 
 CloudFormationの手順は[こちら]()のページにまとめているので、参考にしてください。
 
@@ -211,12 +211,12 @@ $ export -p |grep REGISTRY_URI
 
 Dockerイメージへビルドしましょう。
 ```bash
-sudo docker build -t ${REPOSITORY_URI}:latest .
+sudo docker build -t ${REGISTRY_URI}:latest .
 ```
 
 ECRへプッシュします。
 ```bash
-$ sudo docker push ${REPOSITORY_URI}:latest
+$ sudo docker push ${REGISTRY_URI}:latest
 ```
 
 # 確認
