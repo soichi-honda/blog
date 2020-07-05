@@ -1,18 +1,25 @@
-# 以下のAWSリソースを作成するYamlファイルです。
-# VPC * 1 InternetGW *1
-# PublicSubnet * 1, RouteTable * 1
-# EC2 * 1, SecurityGroup * 1
+# 以下AWSリソースを作成するYamlファイルです。
+# |Resource|Number|
+# |---|---|
+# |VPC|1|
+# |InternetGW|1|
+# |Public Subnet|1|
+# |RouteTable|1|
+# |EC2|1|
+# |Security Group|1|
+
 
 Parameters:
+# Common
   YYYYMMDD:
     Description: Input the date. ex) 20200701
     Type: String
   HandsonName:
     Description: Input the handson name.
     Type: String
-    Default: docker-handson #入力箇所
+    Default: docker-handson
     AllowedValues: 
-      - docker-handson #入力
+      - docker-handson
 
 # VPC
   VpcCidrBlock:
@@ -46,6 +53,34 @@ Parameters:
     Description: Enter the key pair
     Type: "AWS::EC2::KeyPair::KeyName"
 
+Metadata:
+   AWS::CloudFormation::Interface:
+    ParameterGroups:
+      -
+        Label:
+          default: Common
+        Parameters:
+          - YYYYMMDD
+          - HandsonName
+      -
+        Label:
+          default: VPC
+        Parameters:
+          - VpcCidrBlock
+      -
+        Label:
+          default: Public Subnet
+        Parameters:
+          - AZ
+          - PublicSubnetCidrBlock
+      -
+        Label:
+          default: EC2
+        Parameters:
+          - AmiId
+          - InstanceType
+          - KeyPair
+  
 Resources:
 # VPC
   MyVPC:
@@ -128,7 +163,7 @@ Resources:
     Type: AWS::EC2::Instance
     Properties: 
       EbsOptimized: true
-      # IamInstanceProfile: #入力
+      # IamInstanceProfile:
       DisableApiTermination: false
       InstanceInitiatedShutdownBehavior: stop
       Monitoring: false
@@ -155,10 +190,10 @@ Resources:
             - "-"
             - - !Ref YYYYMMDD
               - !Ref HandsonName
-              - worker # 入力箇所
+              - worker 
       # UserData: String
 
-# SG # 入力箇所
+# SG 
   WorkerSG:
     Type: AWS::EC2::SecurityGroup
     Properties: 
