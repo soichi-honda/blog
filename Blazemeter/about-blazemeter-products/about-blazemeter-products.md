@@ -2,7 +2,7 @@
 Blazemter社の製品を使ったので備忘録。
 
 # イメージ図
-[What_is_BlazeMetr_1]
+[assets/about-blazemeter-products_1.png]
 
 # 用語整理
 ## BlazeMeter
