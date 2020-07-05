@@ -39,18 +39,23 @@ Parameters:
 
 # EC2
   AmiId:
-    Description: Input an ami-id. Default is AmazonLinux2 of quick start
+    Description: Input an ami-id. Default is AmazonLinux2 of quick start.
     Type: String
     Default: ami-0a1c2ec61571737db
-
   InstanceType:
-    Description: Input an Instance type
+    Description: Input an Instance type.
     Type: String
     Default: t3.micro
-
   KeyPair:
-    Description: Input your key pair
+    Description: Input your key pair.
     Type: "AWS::EC2::KeyPair::KeyName"
+  InstanceName:
+    Description: Input a instance name. Do not change as much as possible.
+    Type: String
+    Default: String #入力
+    AllowedValues: 
+      - String # 入力
+
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -79,7 +84,8 @@ Metadata:
           - AmiId
           - InstanceType
           - KeyPair
-
+          - InstanceName
+          
 
 Resources:
 # VPC
@@ -92,11 +98,7 @@ Resources:
       InstanceTenancy: default
       Tags: 
         - Key: Name
-          Value: !Join
-            - "-"
-            - - !Ref YYYYMMDD
-              - !Ref HandsonName
-              - vpc
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-vpc
 
 # PublicSubnet
   MyPublicSubnet:
@@ -108,11 +110,7 @@ Resources:
       VpcId: !Ref MyVPC
       Tags: 
         - Key: Name
-          Value: !Join
-            - "-"
-            - - !Ref YYYYMMDD
-              - !Ref HandsonName
-              - pub-sub
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-pub-sub
 
 # InternetGW
   MyInternetGW:
@@ -120,11 +118,7 @@ Resources:
     Properties: 
       Tags: 
         - Key: Name
-          Value: !Join
-            - "-"
-            - - !Ref YYYYMMDD
-              - !Ref HandsonName
-              - igw
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-igw
   
   MyVPCGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -139,11 +133,7 @@ Resources:
       VpcId: !Ref MyVPC
       Tags: 
         - Key: Name
-          Value: !Join
-            - "-"
-            - - !Ref YYYYMMDD
-              - !Ref HandsonName
-              - pub-rtb
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-pub-rtb
 
   MyPublicRoute:
     Type: AWS::EC2::Route
@@ -186,34 +176,16 @@ Resources:
           SubnetId: !Ref MyPublicSubnet
       Tags: 
         - Key: Name
-          Value: !Join
-            - "-"
-            - - !Ref YYYYMMDD
-              - !Ref HandsonName
-              - ap # 入力箇所
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-${InstanceName}
       # UserData: String
 
-# SG # 入力箇所
+# SG
   MySecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties: 
       VpcId: !Ref MyVPC
-      GroupDescription: !Join
-        - " "
-        - - Security Group attached to
-          - !Join
-            - "-"
-            - - !Ref YYYYMMDD
-              - !Ref HandsonName
-              - ap
-      GroupName: !Join
-        - "_"
-        - - sg
-          - !Join
-            - "-"
-            - - !Ref YYYYMMDD
-              - !Ref HandsonName
-              - ap
+      GroupDescription: !Sub Security Group attached to ${YYYYMMDD}-${HandsonName}-${InstanceName}
+      GroupName: !Sub sg_${YYYYMMDD}-${HandsonName}-${InstanceName}
       SecurityGroupIngress: # 入力
         -   CidrIp: 0.0.0.0/0
             Description: SSH port
