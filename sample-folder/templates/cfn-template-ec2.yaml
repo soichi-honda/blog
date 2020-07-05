@@ -16,9 +16,9 @@ Parameters:
   HandsonName:
     Description: Input a handson name. Do not change as much as possible.
     Type: String
-    Default: turus-handson #入力
+    Default: String #入力
     AllowedValues: 
-      - turus-handson #入力
+      - String #入力
 
 # VPC
   VpcCidrBlock:
@@ -56,6 +56,7 @@ Parameters:
     AllowedValues: 
       - String # 入力
 
+
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -84,7 +85,7 @@ Metadata:
           - InstanceType
           - KeyPair
           - InstanceName
-
+          
 
 Resources:
 # VPC
