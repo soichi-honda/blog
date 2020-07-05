@@ -5,7 +5,7 @@
         <title>Loginpage</title>
     </head>
     <body>
-        <p>IDとパスワードを入力してください</p>
+        <p>Please Input ID and Password</p>
         <form id="login_form">
             <p>
                 <label>ID:</label>
@@ -32,7 +32,7 @@
         if (id.value == "admin" && password.value == "password"){
             location.href = "mypage.html";
         }else{
-            output.innerHTML = "IDかパスワードもしくはその両方が間違っています。再度フォームを送信してください";
+            output.innerHTML = "You have input the wrong ID or password.\nPlease submit the from again.";
         }
     })
 </script>

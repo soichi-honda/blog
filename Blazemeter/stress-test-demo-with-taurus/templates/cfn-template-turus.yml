@@ -1,0 +1,123 @@
+# 以下AWSリソースを作成するYamlファイルです。
+# |Resource|Number|
+# |---|---|
+# |EC2|1|
+# |Security Group|1|
+
+Parameters:
+# Common
+  YYYYMMDD:
+    Description: Input a today's date. ex)20200704
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /turus-handson/YYYYMMDD
+    AllowedValues:
+      - /turus-handson/YYYYMMDD
+  HandsonName:
+    Description: Input a handson name. Do not change as much as possible.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /turus-handson/HandsonName
+    AllowedValues: 
+      - /turus-handson/HandsonName
+# EC2
+  SubnetId:
+    Description: Input a handson name. Do not change as much as possible.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /turus-handson/TurusSubnetId
+    AllowedValues: 
+      - /turus-handson/TurusSubnetId
+  AmiId:
+    Description: Input an ami-id. Default is AmazonLinux2 of quick start.
+    Type: String
+    Default: ami-0a1c2ec61571737db
+  InstanceType:
+    Description: Input an Instance type.
+    Type: String
+    Default: t3.small
+  KeyPair:
+    Description: Input your key pair.
+    Type: "AWS::EC2::KeyPair::KeyName"
+  InstanceName:
+    Description: Input a instance name. Do not change as much as possible.
+    Type: String
+    Default: turus
+    AllowedValues: 
+      - turus
+# SG
+  VpcId:
+    Description: Input a handson name. Do not change as much as possible.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /turus-handson/VpcId 
+    AllowedValues: 
+      - /turus-handson/VpcId
+
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      -
+        Label:
+          default: Common
+        Parameters: 
+          - YYYYMMDD
+          - HandsonName
+      -
+        Label:
+          default: EC2
+        Parameters: 
+          - AmiId
+          - InstanceType
+          - KeyPair
+          - InstanceName
+      -
+        Label:
+          default: SG
+        Parameters: 
+          - VpcId
+
+Resources:
+# EC2
+  TurursInstance:
+    Type: AWS::EC2::Instance
+    Properties: 
+      EbsOptimized: true
+      # IamInstanceProfile: #入力
+      DisableApiTermination: true
+      InstanceInitiatedShutdownBehavior: stop
+      Monitoring: false
+      Tenancy: default
+      ImageId: !Ref AmiId
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyPair
+      BlockDeviceMappings: 
+        - DeviceName: /dev/xvda
+          Ebs: 
+            VolumeSize: 8
+            VolumeType: gp2
+            DeleteOnTermination: true
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: false
+          DeleteOnTermination: true
+          GroupSet: 
+            - !Ref TurusSecurityGroup
+          DeviceIndex: 0
+          SubnetId: !Ref SubnetId
+      Tags: 
+        - Key: Name
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-${InstanceName}
+      # UserData: String
+
+# SG
+  TurusSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      VpcId: !Ref VpcId
+      GroupDescription: !Sub Security Group attached to ${YYYYMMDD}-${HandsonName}-${InstanceName}
+      GroupName: !Sub sg_${YYYYMMDD}-${HandsonName}-${InstanceName}
+      SecurityGroupIngress: # 入力
+        -   CidrIp: 0.0.0.0/0
+            Description: SSH port
+            FromPort: 22
+            IpProtocol: tcp
+            # SourceSecurityGroupId: String
+            # SourceSecurityGroupName: String
+            ToPort: 22
