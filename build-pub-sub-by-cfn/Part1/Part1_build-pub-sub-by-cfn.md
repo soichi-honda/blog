@@ -27,7 +27,7 @@ AWSリソースを構築する場合、利用料金は無料。
 
 最終的に出来上がる構成図イメージは以下です。
 
-[How_to_CloudFormation_1]
+[assets/build-pub-sub-by-cfn_1.PNG]
 
 # 作業
 CloudFormationのテンプレートファイルは色々なセクションに分かれています。
@@ -329,105 +329,7 @@ Resources:
 ということでテンプレートファイルができました。
 こちらが完成版となります。
 
-```yaml
-Parameters:
-# VPC
-  VpcCidrBlock:
-    Description: Input a VPC IPv4 CidrBlock. ex) 192.168.2.0/24
-    Type: String
-  VpcName:
-    Description: Input a VPC name. This Parameter will be a Name tag.
-    Type: String
-    Default: ""
-
-# Public Subnet
-  AZ:
-    Description: Input a AZ where Public Subnet will be created.
-    Type: AWS::EC2::AvailabilityZone::Name
-  PublicSubnetCidrBlock:
-    Description: Input a Public Subnet IPv4 CidrBlock.  ex) 192.168.2.0/25
-    Type: String
-  PublicSubnetName:
-    Description: Input a Public Subnet name. This Parameter will be a Name tag.
-    Type: String
-    Default: ""
-
-# Internet GW
-  InternetGwName:
-    Description: Input a IntenetGW name. This Parameter will be a Name tag.
-    Type: String
-    Default: ""
-
-# RouteTable for Public Subnet
-  RouteTableName:
-    Description: Input a RouteTable name. This Parameter will be a Name tag.
-    Type: String
-    Default: ""
-
-
-Resources:
-# VPC
-  MyVPC:
-    Type: AWS::EC2::VPC
-    Properties: 
-      CidrBlock: !Ref VpcCidrBlock
-      EnableDnsHostnames: true
-      EnableDnsSupport: true
-      InstanceTenancy: default
-      Tags: 
-        - Key: Name
-          Value: !Ref VpcName
-
-# PublicSubnet
-  MyPublicSubnet:
-    Type: AWS::EC2::Subnet
-    Properties: 
-      AvailabilityZone: !Ref AZ
-      CidrBlock: !Ref PublicSubnetCidrBlock
-      MapPublicIpOnLaunch: true
-      Tags: 
-        - Key: Name
-          Value: !Ref PublicSubnetName
-      VpcId: !Ref MyVPC
-
-# InternetGW
-  MyInternetGW:
-    Type: AWS::EC2::InternetGateway
-    Properties: 
-      Tags: 
-        - Key: Name
-          Value: !Ref InternetGwName
-  
-  MyVPCGatewayAttachment:
-    Type: AWS::EC2::VPCGatewayAttachment
-    Properties: 
-      InternetGatewayId: !Ref MyInternetGW
-      VpcId: !Ref MyVPC
-
-# RouteTable for Public Subnet
-  MyRouteTable:
-    Type: AWS::EC2::RouteTable
-    Properties: 
-      Tags: 
-        - Key: Name
-          Value: !Ref RouteTableName
-      VpcId: !Ref MyVPC
-
-  MyPublicRoute:
-    Type: AWS::EC2::Route
-    Properties: 
-      DestinationCidrBlock: 0.0.0.0/0
-      GatewayId: !Ref MyInternetGW
-      RouteTableId: !Ref MyRouteTable
-
-  MySubnetRouteTableAssociation:
-      Type: AWS::EC2::SubnetRouteTableAssociation
-      Properties: 
-        RouteTableId: !Ref MyRouteTable
-        SubnetId: !Ref MyPublicSubnet
-
-```
-
+[templates/build-pub-sub-by-cfn.yml]
 
 # まとめ
 前編ではCloudFormationで使うテンプレートファイルの書き方についてまとめました。
