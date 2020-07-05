@@ -1,36 +1,61 @@
+# A Yaml file that creates the following AWS resources.
+# |Resource|Number|
+# |---|---|
+# |VPC|1|
+# |InternetGW|1|
+# |Public Subnet|1|
+# |RouteTable|1|
+
+# Common
 Parameters:
+  YYYYMMDD:
+    Description: Input a today's date. ex)20200704
+    Type: String
+  HandsonName:
+    Description: Input a handson name. Do not change as much as possible.
+    Type: String
+    Default: cfn-handson
+    AllowedValues: 
+      - cfn-handson
+
 # VPC
   VpcCidrBlock:
     Description: Input a VPC IPv4 CidrBlock. ex) 192.168.2.0/24
     Type: String
-  VpcName:
-    Description: Input a VPC name. This Parameter will be a Name tag.
-    Type: String
-    Default: ""
 
 # Public Subnet
   AZ:
-    Description: Input a AZ where Public Subnet will be created.
+    Description: Select a AZ where Public Subnet will be created.
     Type: AWS::EC2::AvailabilityZone::Name
   PublicSubnetCidrBlock:
     Description: Input a Public Subnet IPv4 CidrBlock.  ex) 192.168.2.0/25
     Type: String
-  PublicSubnetName:
-    Description: Input a Public Subnet name. This Parameter will be a Name tag.
-    Type: String
-    Default: ""
 
 # Internet GW
-  InternetGwName:
-    Description: Input a IntenetGW name. This Parameter will be a Name tag.
-    Type: String
-    Default: ""
 
 # RouteTable for Public Subnet
-  RouteTableName:
-    Description: Input a RouteTable name. This Parameter will be a Name tag.
-    Type: String
-    Default: ""
+
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      -
+        Label:
+          default: Common
+        Parameters: 
+          - YYYYMMDD
+          - HandsonName
+      -
+        Label:
+          default: VPC
+        Parameters: 
+          - VpcCidrBlock
+      -
+        Label:
+          default: Public Subnet
+        Parameters: 
+          - AZ
+          - PublicSubnetCidrBlock
 
 
 Resources:
@@ -44,7 +69,11 @@ Resources:
       InstanceTenancy: default
       Tags: 
         - Key: Name
-          Value: !Ref VpcName
+          Value: !Join
+            - "-"
+            - - !Ref YYYYMMDD
+              - !Ref HandsonName
+              - vpc
 
 # PublicSubnet
   MyPublicSubnet:
@@ -53,10 +82,14 @@ Resources:
       AvailabilityZone: !Ref AZ
       CidrBlock: !Ref PublicSubnetCidrBlock
       MapPublicIpOnLaunch: true
+      VpcId: !Ref MyVPC
       Tags: 
         - Key: Name
-          Value: !Ref PublicSubnetName
-      VpcId: !Ref MyVPC
+          Value: !Join
+            - "-"
+            - - !Ref YYYYMMDD
+              - !Ref HandsonName
+              - pub-sub
 
 # InternetGW
   MyInternetGW:
@@ -64,7 +97,11 @@ Resources:
     Properties: 
       Tags: 
         - Key: Name
-          Value: !Ref InternetGwName
+          Value: !Join
+            - "-"
+            - - !Ref YYYYMMDD
+              - !Ref HandsonName
+              - igw
   
   MyVPCGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -76,10 +113,14 @@ Resources:
   MyRouteTable:
     Type: AWS::EC2::RouteTable
     Properties: 
+      VpcId: !Ref MyVPC
       Tags: 
         - Key: Name
-          Value: !Ref RouteTableName
-      VpcId: !Ref MyVPC
+          Value: !Join
+            - "-"
+            - - !Ref YYYYMMDD
+              - !Ref HandsonName
+              - pub-rtb
 
   MyPublicRoute:
     Type: AWS::EC2::Route
