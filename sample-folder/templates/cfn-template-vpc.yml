@@ -8,18 +8,9 @@
 # |EC2|1|
 # |Security Group|1|Parameters:
 
-Parameters:
-# Common
-  YYYYMMDD:
-    Description: Input a today's date. ex)20200704
-    Type: String
-  HandsonName:
-    Description: Input a handson name. Do not change as much as possible.
-    Type: String
-    Default: String #入力
-    AllowedValues: 
-      - String #入力
+# StackName: xxx-handson-YYYYMMDD
 
+Parameters:
 # VPC
   VpcCidrBlock:
     Description: Input a VPC IPv4 CidrBlock. ex) 192.168.2.0/24
@@ -62,12 +53,6 @@ Metadata:
     ParameterGroups:
       -
         Label:
-          default: Common
-        Parameters: 
-          - YYYYMMDD
-          - HandsonName
-      -
-        Label:
           default: VPC
         Parameters: 
           - VpcCidrBlock
@@ -98,7 +83,7 @@ Resources:
       InstanceTenancy: default
       Tags: 
         - Key: Name
-          Value: !Sub ${YYYYMMDD}-${HandsonName}-vpc
+          Value: !Sub ${AWS::StackName}-vpc
 
 # PublicSubnet
   MyPublicSubnet:
@@ -110,7 +95,7 @@ Resources:
       VpcId: !Ref MyVPC
       Tags: 
         - Key: Name
-          Value: !Sub ${YYYYMMDD}-${HandsonName}-pub-sub
+          Value: !Sub ${AWS::StackName}-pub-sub
 
 # InternetGW
   MyInternetGW:
@@ -118,7 +103,7 @@ Resources:
     Properties: 
       Tags: 
         - Key: Name
-          Value: !Sub ${YYYYMMDD}-${HandsonName}-igw
+          Value: !Sub ${AWS::StackName}-igw
   
   MyVPCGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -133,7 +118,7 @@ Resources:
       VpcId: !Ref MyVPC
       Tags: 
         - Key: Name
-          Value: !Sub ${YYYYMMDD}-${HandsonName}-pub-rtb
+          Value: !Sub ${AWS::StackName}-pub-rtb
 
   MyPublicRoute:
     Type: AWS::EC2::Route
@@ -148,49 +133,23 @@ Resources:
         RouteTableId: !Ref MyRouteTable
         SubnetId: !Ref MyPublicSubnet
 
-# EC2
-  MyEC2Instance:
-    Type: AWS::EC2::Instance
-    Properties: 
-      EbsOptimized: true
-      # IamInstanceProfile: #入力
-      DisableApiTermination: false
-      InstanceInitiatedShutdownBehavior: stop
-      Monitoring: false
-      Tenancy: default
-      ImageId: !Ref AmiId
-      InstanceType: !Ref InstanceType
-      KeyName: !Ref KeyPair
-      BlockDeviceMappings: 
-        - DeviceName: /dev/xvda
-          Ebs: 
-            VolumeSize: 8
-            VolumeType: gp2
-            DeleteOnTermination: true
-      NetworkInterfaces:
-        - AssociatePublicIpAddress: false
-          DeleteOnTermination: true
-          GroupSet: 
-            - !Ref MySecurityGroup
-          DeviceIndex: 0
-          SubnetId: !Ref MyPublicSubnet
-      Tags: 
-        - Key: Name
-          Value: !Sub ${YYYYMMDD}-${HandsonName}-${InstanceName}
-      # UserData: String
-
-# SG
-  MySecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties: 
-      VpcId: !Ref MyVPC
-      GroupDescription: !Sub Security Group attached to ${YYYYMMDD}-${HandsonName}-${InstanceName}
-      GroupName: !Sub sg_${YYYYMMDD}-${HandsonName}-${InstanceName}
-      SecurityGroupIngress: # 入力
-        -   CidrIp: 0.0.0.0/0
-            Description: SSH port
-            FromPort: 22
-            IpProtocol: tcp
-            # SourceSecurityGroupId: String
-            # SourceSecurityGroupName: String
-            ToPort: 22
+# SSM Parameter
+# SSM
+  SSMPrefix:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${AWS::StackName}/Prefix
+      Value: !Ref AWS::StackName
+      Type: String
+  SSMVpcId:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${AWS::StackName}/VpcId
+      Value: !Ref MyVPC
+      Type: String
+  SSMSubnetId:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${AWS::StackName}/SubnetId
+      Value: !Ref MySubnet
+      Type: String
