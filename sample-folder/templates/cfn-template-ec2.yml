@@ -9,16 +9,16 @@ Parameters:
   Prefix:
     Description: Input a prefix. Do not change as much as possible.
     Type: AWS::SSM::Parameter::Value<String>
-    Default: /xxx-handson-YYYYMMDD/Prefix
+    Default: /xxx-handson/Prefix
     AllowedValues: 
-      - /xxx-handson-YYYYMMDD/Prefix
+      - /xxx-handson/Prefix
 # EC2
   SubnetId:
     Description: Input a SubnetId. Do not change as much as possible.
     Type: AWS::SSM::Parameter::Value<String>
-    Default: /xxx-handson-YYYYMMDD/TurusSubnetId
+    Default: /xxx-handson/TurusSubnetId
     AllowedValues: 
-      - /xxx-handson-YYYYMMDD/SubnetId
+      - /xxx-handson/SubnetId
   AmiId:
     Description: Input an ami-id. Default is AmazonLinux2 of quick start.
     Type: String
@@ -40,9 +40,9 @@ Parameters:
   VpcId:
     Description: Input a handson name. Do not change as much as possible.
     Type: AWS::SSM::Parameter::Value<String>
-    Default: /xxx-handson-YYYYMMDD/VpcId 
+    Default: /xxx-handson/VpcId 
     AllowedValues: 
-      - /xxx-handson-YYYYMMDD/VpcId
+      - /xxx-handson/VpcId
 
 Metadata:
   AWS::CloudFormation::Interface:

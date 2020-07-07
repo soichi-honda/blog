@@ -8,9 +8,17 @@
 # |EC2|1|
 # |Security Group|1|Parameters:
 
-# StackName: xxx-handson-YYYYMMDD
-
 Parameters:
+# Common
+  YYYYMMDD:
+    Description: Input a today's date. ex)20200704
+    Type: String
+  HandsonName:
+    Description: Input a handson name. Do not change as much as possible.
+    Type: String
+    Default: xxx-handson
+    AllowedValues: 
+      - xxx-handson
 # VPC
   VpcCidrBlock:
     Description: Input a VPC IPv4 CidrBlock. ex) 192.168.2.0/24
@@ -83,8 +91,7 @@ Resources:
       InstanceTenancy: default
       Tags: 
         - Key: Name
-          Value: !Sub ${AWS::StackName}-vpc
-
+          Value: !Sub ${YYYYMMDD}-${Handson}-vpc
 # PublicSubnet
   MyPublicSubnet:
     Type: AWS::EC2::Subnet
@@ -95,7 +102,7 @@ Resources:
       VpcId: !Ref MyVPC
       Tags: 
         - Key: Name
-          Value: !Sub ${AWS::StackName}-pub-sub
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-pub-sub
 
 # InternetGW
   MyInternetGW:
@@ -103,7 +110,7 @@ Resources:
     Properties: 
       Tags: 
         - Key: Name
-          Value: !Sub ${AWS::StackName}-igw
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-igw
   
   MyVPCGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -118,7 +125,7 @@ Resources:
       VpcId: !Ref MyVPC
       Tags: 
         - Key: Name
-          Value: !Sub ${AWS::StackName}-pub-rtb
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-pub-rtb
 
   MyPublicRoute:
     Type: AWS::EC2::Route
@@ -138,18 +145,18 @@ Resources:
   SSMPrefix:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: !Sub /${AWS::StackName}/Prefix
-      Value: !Ref AWS::StackName
+      Name: !Sub /${HandsonName}/Prefix
+      Value: !Sub ${YYYYMMDD}-${HandsonName}
       Type: String
   SSMVpcId:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: !Sub /${AWS::StackName}/VpcId
+      Name: !Sub /${HandsonName}/VpcId
       Value: !Ref MyVPC
       Type: String
   SSMSubnetId:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: !Sub /${AWS::StackName}/SubnetId
+      Name: !Sub /${HandsonName}/SubnetId
       Value: !Ref MySubnet
       Type: String
