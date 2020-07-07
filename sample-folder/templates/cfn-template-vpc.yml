@@ -1,4 +1,4 @@
-# 以下AWSリソースを作成するYamlファイルです。
+# Yml file that builds the following AWS resources
 # |Resource|Number|
 # |---|---|
 # |VPC|1|
@@ -6,7 +6,7 @@
 # |Public Subnet|1|
 # |RouteTable|1|
 # |EC2|1|
-# |Security Group|1|Parameters:
+# |Security Group|1|
 
 Parameters:
 # Common
