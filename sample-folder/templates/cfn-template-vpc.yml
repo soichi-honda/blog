@@ -91,7 +91,7 @@ Resources:
       InstanceTenancy: default
       Tags: 
         - Key: Name
-          Value: !Sub ${YYYYMMDD}-${Handson}-vpc
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-vpc
 # PublicSubnet
   MyPublicSubnet:
     Type: AWS::EC2::Subnet
@@ -142,11 +142,17 @@ Resources:
 
 # SSM Parameter
 # SSM
-  SSMPrefix:
+  SSMYYYYMMDD:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: !Sub /${HandsonName}/Prefix
-      Value: !Sub ${YYYYMMDD}-${HandsonName}
+      Name: !Sub /${HandsonName}/YYYYMMDD
+      Value: !Ref YYYYMMDD
+      Type: String
+  SSMHandsonName:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${HandsonName}/HandsonName
+      Value: !Ref HandsonName
       Type: String
   SSMVpcId:
     Type: AWS::SSM::Parameter
