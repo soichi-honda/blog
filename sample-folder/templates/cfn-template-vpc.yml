@@ -19,7 +19,6 @@ Parameters:
     Default: xxx-handson
     AllowedValues: 
       - xxx-handson
-
 # VPC
   VpcCidrBlock:
     Description: Input a VPC IPv4 CidrBlock. ex) 192.168.2.0/24
@@ -93,7 +92,6 @@ Resources:
       Tags: 
         - Key: Name
           Value: !Sub ${YYYYMMDD}-${Handson}-vpc
-
 # PublicSubnet
   MyPublicSubnet:
     Type: AWS::EC2::Subnet
