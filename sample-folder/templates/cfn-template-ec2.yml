@@ -7,7 +7,7 @@
 Parameters:
 # Common
   YYYYMMDD:
-    Description: Input a today's date. ex)20200704
+    Description: Input a today's date. Do not change as much as possible.
     Type: AWS::SSM::Parameter::Value<String>
     Default: /xxx-handson/YYYYMMDD
     AllowedValues: 
@@ -20,12 +20,6 @@ Parameters:
       - /xxx-handson/HandsonName
 
 # EC2
-  SubnetId:
-    Description: Input a SubnetId. Do not change as much as possible.
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: /${HandsonName}/TurusSubnetId
-    AllowedValues: 
-      - /${HandsonName}/SubnetId
   AmiId:
     Description: Input an ami-id. Default is AmazonLinux2 of quick start.
     Type: String
@@ -43,6 +37,12 @@ Parameters:
     Default: xxx
     AllowedValues: 
       - xxx
+  SubnetId:
+    Description: Input a SubnetId. Do not change as much as possible.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /${HandsonName}/TurusSubnetId
+    AllowedValues: 
+      - /${HandsonName}/SubnetId
 # SG
   VpcId:
     Description: Input a handson name. Do not change as much as possible.
@@ -58,12 +58,14 @@ Metadata:
         Label:
           default: Common
         Parameters: 
-          - Prefix
+          - YYYYMMDD
+          - HandsonName
       -
         Label:
           default: EC2
         Parameters: 
           - AmiId
+          - SubnetId
           - InstanceType
           - KeyPair
           - InstanceName
