@@ -9,16 +9,29 @@ Parameters:
   Prefix:
     Description: Input a prefix. Do not change as much as possible.
     Type: AWS::SSM::Parameter::Value<String>
-    Default: /xxx-handson/Prefix
+    Default: /${HandsonName}/Prefix
     AllowedValues: 
-      - /xxx-handson/Prefix
+      - /${HandsonName}/Prefix
+  YYYYMMDD:
+    Description: Input a today's date. ex)20200704
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /${HandsonName}/YYYYMMDD
+    AllowedValues: 
+      - /${HandsonName}/YYYYMMDD
+  HandsonName:
+    Description: Input a handson name. Do not change as much as possible.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /${HandsonName}/HandsonName
+    AllowedValues: 
+      - /${HandsonName}/HandsonName
+
 # EC2
   SubnetId:
     Description: Input a SubnetId. Do not change as much as possible.
     Type: AWS::SSM::Parameter::Value<String>
-    Default: /xxx-handson/TurusSubnetId
+    Default: /${HandsonName}/TurusSubnetId
     AllowedValues: 
-      - /xxx-handson/SubnetId
+      - /${HandsonName}/SubnetId
   AmiId:
     Description: Input an ami-id. Default is AmazonLinux2 of quick start.
     Type: String
@@ -40,9 +53,9 @@ Parameters:
   VpcId:
     Description: Input a handson name. Do not change as much as possible.
     Type: AWS::SSM::Parameter::Value<String>
-    Default: /xxx-handson/VpcId 
+    Default: /${HandsonName}/VpcId 
     AllowedValues: 
-      - /xxx-handson/VpcId
+      - /${HandsonName}/VpcId
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -95,7 +108,7 @@ Resources:
           SubnetId: !Ref SubnetId
       Tags: 
         - Key: Name
-          Value: !Sub ${Prefix}-${InstanceName}
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-${InstanceName}
       # UserData: String
 
 # SG
@@ -103,8 +116,8 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties: 
       VpcId: !Ref VpcId
-      GroupDescription: !Sub Security Group attached to ${Prefix}-${InstanceName}
-      GroupName: !Sub sg_${Prefix}-${InstanceName}
+      GroupDescription: !Sub Security Group attached to ${YYYYMMDD}-${HandsonName}-${InstanceName}
+      GroupName: !Sub sg_${YYYYMMDD}-${HandsonName}-${InstanceName}
       SecurityGroupIngress: # 入力
         -   CidrIp: 0.0.0.0/0
             Description: SSH port
