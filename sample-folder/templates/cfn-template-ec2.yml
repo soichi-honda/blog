@@ -96,7 +96,7 @@ Resources:
             VolumeType: gp2
             DeleteOnTermination: true
       NetworkInterfaces:
-        - AssociatePublicIpAddress: false
+        - AssociatePublicIpAddress: true
           DeleteOnTermination: true
           GroupSet: 
             - !Ref MySG
@@ -121,4 +121,4 @@ Resources:
             IpProtocol: tcp
             # SourceSecurityGroupId: String
             # SourceSecurityGroupName: String
-            ToPort: 
+            ToPort: 22

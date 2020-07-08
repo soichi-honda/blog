@@ -9,14 +9,18 @@
 Parameters:
 # Common
   YYYYMMDD:
-    Description: Input a today's date. ex)20200704
-    Type: String
+    Description: Input a today's date. Do not change as much as possible.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /xxx-handson/YYYYMMDD
+    AllowedValues: 
+      - /xxx-handson/YYYYMMDD
   HandsonName:
     Description: Input a handson name. Do not change as much as possible.
-    Type: String
-    Default: xxx-handson
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /xxx-handson/HandsonName
     AllowedValues: 
-      - xxx-handson
+      - /xxx-handson/HandsonName
+
 # VPC
   VpcCidrBlock:
     Description: Input a VPC IPv4 CidrBlock. ex) 192.168.2.0/24
@@ -117,19 +121,6 @@ Resources:
         SubnetId: !Ref MyPublicSubnet
 
 # SSM Parameter
-# SSM
-  SSMYYYYMMDD:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: !Sub /${HandsonName}/YYYYMMDD
-      Value: !Ref YYYYMMDD
-      Type: String
-  SSMHandsonName:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: !Sub /${HandsonName}/HandsonName
-      Value: !Ref HandsonName
-      Type: String
   SSMVpcId:
     Type: AWS::SSM::Parameter
     Properties:
