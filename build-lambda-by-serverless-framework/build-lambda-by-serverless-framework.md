@@ -1,67 +1,67 @@
 AmazonLinux2にServerless Frameworkの環境を構築して試してみます。
 
+記事目安 - 10分
+
 # 事前知識
-Serverless Framework
+## Serverless Framework
 サーバレスアプリケーションを構成管理+デプロイするためのツール。
 様々なクラウドプロバイダーで上にデプロイができる。
 
 # ゴール
-- AmazonLinux2環境にServerlessFrameworkを構築する
-- ServerlessFrameworkを構築して、Lambdaをデプロイする
+構成図のイメージです。
+
 [How_to_Serverless_Framework_1]
 
+今回は大きく2つのことを行います。
+- AmazonLinux2環境にServerlessFrameworkを構築する
+- ServerlessFrameworkを構築して、Lambdaをデプロイする
+
 # 作業
-## 環境構築
+## Serverless Frameworkの準備
 
-### IAM Roleの準備
-Serverless Frameworkは他のAWSサービスを触れる必要があるので、
-IAM Roleを用意します。
-|Key|Value|
-|---|---|
-|RoleName|<本日の年月日>-serverless-handson-role|
+### NW環境の構築
 
-IAM Role を作成ので、ポリシーをアタッチしましょう。
-1. 対象のロールを選択。
-1. *アクセス権限* タブ > *インラインポリシーの追加*
-1. *JSON*　タブ を開く。
-1. [こちら](https://github.com/serverless/serverless/issues/1439)のサイトにあるJSONを貼り付ける。
-※一行目に *{* 抜けているので追記してください。
-1. *ポリシーの確認* を押す。
-1. 名前を *<本日の年月日>-serverless-handson-policy* にして *ポリシーの作成* を押す。
+最初にServerless Frameworkを環境を作りましょう。
+
+まずは、以下URLのテンプレートをCloudFormationで流して、VPCとPublicSubnetを作成してください。
+スタック名は 、serverless-handson-<YYYYMMDD>-vpc でお願いします。
+
+[templates/cfn-template-vpc.yml]
+
+CloudFormationへの流し方がわからない方は以下の記事を参考にしていただけると。
+[]()
+
+### IAM Roleの構築
+先にも書きましたが、Serverless Frameworkはデプロイツールです。
+ゆえに様々なリソースに対して権限が必要です。
+
+ということでまずはIAMRoleを作成します。
+
+本当はよくないのですが、すぐ消す環境なので *AdministratorAccess* で作成します。
+
+以下URLのテンプレートをスタック名 serverless-handson-<YYYYMMDD>-iam-role　で流してください。
+
+[templates/cfn-template-iam-role.yml]
+
 
 ### EC2の構築
-以下の条件でEC2とSGを準備してください
-- EC2
-|OS|Amazonlinux2|
-|Instance Type|t3.micro|
-|Tag|Name: <本日の年月日>-serverless-handson|
+Serverless FrameworkをインストールするEC2とアタッチするSGを構築します。
 
-- SG
-|Key|Value|
-|---|---|
-|SecurityGroupName|sg-<本日の年月日>-serverless-handson|
+以下URLのテンプレートをスタック名 serverless-handson-<YYYYMMDD>-ec2 で流してください。
+なお、先ほど作成したロールもアタッチされた状態で構築されます。
 
-|Rule|Type|Protocol|port|Source/Destination|
-|---|---|---|---|---|
-|Inbound|SSH|TCP|22|<ローカルPCのIPアドレス>|
-|Outbound|すべてのトラフィック|すべて|すべて|0.0.0.0/0|
+[templates/cfn-template-ec2.yml]
 
-EC2作成後は、IAMロールをアタッチします。
-1. *アクション* > *IAMロールの割当/置換* を押す
-1. ＩＡＭロ―ルの欄に先ほど作成したロールを選択して *適用* を押す
 
-### ServerlessFrameworkのインストール
-参考までに、今回使ったパッケージとバージョンです。
-※Pythonはデフォルトでインストールされているものをそのまま使っています。
-|Package|Version|
-|---|---|
-|node|14.4.0|
-|Serverless Framework|1.73.1|
-|python|2.7.16|
+### Serverless Frameworkのインストール
 
-対象のEC2にSSHしてください。
+環境をサクッと構築したところで本題のServerless Frameworkに触れていきます。
 
-最初に、nodejsを入れます。
+
+EC2の <YYYYMMDD>-serverless-framework-handson-ap にSSHしてください。
+
+まずは、nodejsを入れます。
+
 ```bash
 $ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
 $ . ~/.nvm/nvm.sh
@@ -76,24 +76,59 @@ $ npm install -g serverless
 $ serverless -v //確認
 ```
 
-## Lambdaのデプロイ
-今回はテンプレートを用いて、Lambdaをデプロイします。
-まずは、環境フォルダとテンプレートファイルを作成しましょう。
+一応、pythonがインストールされているかも確認しておいてください。
 ```bash
-$ sls create -p serverless-handson -t aws-python
-$ ls serverless-handson
+$ python -V
+```
+
+※捕捉
+1. パッケージについて
+僕は以下のバージョンで必要なパッケージをインストールしました。  
+Pythonはデフォルトでインストールされていたものをそのまま使っています。
+|Package|Version|
+|---|---|
+|node|14.4.0|
+|Serverless Framework|1.73.1|
+|python|2.7.16|
+
+2. Pythonについて
+後半、ローカルでテストをする際に使用します。
+
+## Lambdaのデプロイ
+
+Serverless Frameworkでは、いくつかのテンプレートが用意されています。
+今回はそれを用いて、Lambdaをデプロイします。
+
+sls createコマンドを使用して、環境フォルダとテンプレートファイルを作成しましょう。
+オプションは以下です。
+|Option|Detail|
+|---|---|
+|p|作成されるフォルダの名前を指定|
+|t|使用する言語を指定|
+
+```bash
+$ sls create -p <YYYYMMDD>-serverless-handson -t aws-python
+$ ls <YYYYMMDD>-serverless-handson
 handler.py  serverless.yml
 ```
-各ファイル詳細は以下です。
+
+※捕捉
+1. 作成されたフォルダの詳細
 |File|Detail|
 |---|---|
 |handler.py|Lambda上で実行されるコードを記述するファイル|
 |serverless.yml|デプロイの設定を記述するファイル|
 
 続いて、Lambdaにデプロイする前にコードが正しく動作するか確認しておきましょう。
-*hello* とは、handler.py内の関数 *hello* を指します。
+-f で handler.py 内の関数helloを指定します。
+
+
 ```bash
 $ sls invoke local -f hello
+```
+
+このような返り値が返ればOKです。
+```bash
 {
     "body": "{\"input\": {}, \"message\": \"Go Serverless v1.0! Your function executed successfully!\"}",
     "statusCode": 200
@@ -111,9 +146,9 @@ $ sls deploy
 
 ちなみに、裏側はCloudFormationが動いてるので、CloudFormmationコンソールからもデプロイしていることがわかりますよ。
 
-EC2に入っている状態で、Lambdaを動かすことも可能です。
+EC2から、Lambdaを動かすことも可能です。
 正しくデプロイできていれば、sls invoke localの返り値と一致します。
-こちらでも確認してみましょう。
+
 ```bash
 $ sls invoke -f hello
 ```
@@ -122,22 +157,21 @@ $ sls invoke -f hello
 最後に今回使ったリソースを削除しましょう。
 
 Serverless Frameworkで作成したリソースは、コマンド一つで消すことができます。
-CloudFormationに感謝です
+CloudFormationに感謝です。
 ```
 $ sls remove -r us-east-1
 ```
 
-今回は手動で作ったリソースもあるので、こちらも忘れず消してください
+また、今回のために作った環境も忘れず消してください
 |AWS Resource|Name|
 |---|---|
-|EC2|<本日の年月日>-serverless-handson|
-|SG|sg-<本日の年月日>-serverless-handson|
-|IAMRole|<本日の年月日>-serverless-handson-role|
+|CloudFormation Stack|serverless-handson-<YYYYMMDD>-ec2|
+|CloudFormation Stack|serverless-handson-<YYYYMMDD>-iam-role|
+|CloudFormation Stack|serverless-handson-<YYYYMMDD>-vpc|
 
 # まとめ
 今回はServerless Frameworkを使って、シンプルなLambdaを作成しました。
 
 デプロイ~削除まで簡単にできて、ローカルでテストできるのは魅力的ですね。
-Codeシリーズとうまく組み合わせられるとさらに便利なんじゃないかなーと思いました。
 
 以上ありがとうございました。
