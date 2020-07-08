@@ -5,20 +5,22 @@
 # |InternetGW|1|
 # |Public Subnet|1|
 # |RouteTable|1|
-# |EC2|1|
-# |Security Group|1|
 
 Parameters:
 # Common
   YYYYMMDD:
-    Description: Input a today's date. ex)20200704
-    Type: String
+    Description: Input a today's date. Do not change as much as possible.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /xxx-handson/YYYYMMDD
+    AllowedValues: 
+      - /xxx-handson/YYYYMMDD
   HandsonName:
     Description: Input a handson name. Do not change as much as possible.
-    Type: String
-    Default: xxx-handson
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /xxx-handson/HandsonName
     AllowedValues: 
-      - xxx-handson
+      - /xxx-handson/HandsonName
+
 # VPC
   VpcCidrBlock:
     Description: Input a VPC IPv4 CidrBlock. ex) 192.168.2.0/24
@@ -36,29 +38,16 @@ Parameters:
 
 # RouteTable for Public Subnet
 
-# EC2
-  AmiId:
-    Description: Input an ami-id. Default is AmazonLinux2 of quick start.
-    Type: String
-    Default: ami-0a1c2ec61571737db
-  InstanceType:
-    Description: Input an Instance type.
-    Type: String
-    Default: t3.micro
-  KeyPair:
-    Description: Input your key pair.
-    Type: "AWS::EC2::KeyPair::KeyName"
-  InstanceName:
-    Description: Input a instance name. Do not change as much as possible.
-    Type: String
-    Default: String #入力
-    AllowedValues: 
-      - String # 入力
-
 
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
+      -
+        Label:
+          default: Common
+        Parameters: 
+          - YYYYMMDD
+          - HandsonName
       -
         Label:
           default: VPC
@@ -69,16 +58,7 @@ Metadata:
           default: Public Subnet
         Parameters: 
           - AZ
-          - PublicSubnetCidrBlock
-      -
-        Label:
-          default: EC2
-        Parameters: 
-          - AmiId
-          - InstanceType
-          - KeyPair
-          - InstanceName
-          
+          - PublicSubnetCidrBlock          
 
 Resources:
 # VPC
@@ -141,19 +121,6 @@ Resources:
         SubnetId: !Ref MyPublicSubnet
 
 # SSM Parameter
-# SSM
-  SSMYYYYMMDD:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: !Sub /${HandsonName}/YYYYMMDD
-      Value: !Ref YYYYMMDD
-      Type: String
-  SSMHandsonName:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: !Sub /${HandsonName}/HandsonName
-      Value: !Ref HandsonName
-      Type: String
   SSMVpcId:
     Type: AWS::SSM::Parameter
     Properties:
