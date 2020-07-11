@@ -27,7 +27,7 @@ Parameters:
   InstanceType:
     Description: Input an Instance type.
     Type: String
-    Default: t3.small
+    Default: t3.micro
   KeyPair:
     Description: Input your key pair.
     Type: "AWS::EC2::KeyPair::KeyName"
@@ -40,9 +40,9 @@ Parameters:
   SubnetId:
     Description: Input a SubnetId. Do not change as much as possible.
     Type: AWS::SSM::Parameter::Value<String>
-    Default: /${HandsonName}/TurusSubnetId
+    Default: /xxx-handson/SubnetId
     AllowedValues: 
-      - /${HandsonName}/SubnetId
+      - /xxx-handson/SubnetId
 # SG
   VpcId:
     Description: Input a handson name. Do not change as much as possible.
@@ -82,7 +82,7 @@ Resources:
     Properties: 
       EbsOptimized: true
       # IamInstanceProfile: #入力
-      DisableApiTermination: true
+      DisableApiTermination: false
       InstanceInitiatedShutdownBehavior: stop
       Monitoring: false
       Tenancy: default

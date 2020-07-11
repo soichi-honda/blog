@@ -73,7 +73,7 @@ Resources:
         - Key: Name
           Value: !Sub ${YYYYMMDD}-${HandsonName}-vpc
 # PublicSubnet
-  MyPublicSubnet:
+  MySubnet:
     Type: AWS::EC2::Subnet
     Properties: 
       AvailabilityZone: !Ref AZ
@@ -118,7 +118,7 @@ Resources:
       Type: AWS::EC2::SubnetRouteTableAssociation
       Properties: 
         RouteTableId: !Ref MyRouteTable
-        SubnetId: !Ref MyPublicSubnet
+        SubnetId: !Ref MySubnet
 
 # SSM Parameter
   SSMVpcId:
