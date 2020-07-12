@@ -58,10 +58,10 @@ Resources:
       Roles: 
         - !Ref IamRole
 
-  SSMInstanchProfileName:
+  SSMInstanceProfileName:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: !Sub /${HandsonName}/InstanchProfileName
+      Name: !Sub /${HandsonName}/InstanceProfileName
       Value: !Ref InstanceProfile
       Type: String
 
