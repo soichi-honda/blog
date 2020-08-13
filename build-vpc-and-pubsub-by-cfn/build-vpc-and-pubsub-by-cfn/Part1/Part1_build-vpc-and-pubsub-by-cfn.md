@@ -29,7 +29,8 @@ AWSリソースを構築する場合、利用料金は無料です。
 
 最終的に出来上がる構成図イメージは以下です。
 
-[assets/build-pub-sub-by-cfn_1.PNG]
+[f:id:swx-sugaya:20200813132940p:plain](assets/Part_1.PNG)
+
 
 ## 作業
 前提として、CloudFormationテンプレートファイルは色々なセクションに分かれています。
@@ -46,6 +47,8 @@ Parameters:
   
 Resources:
 ```
+
+※作成を過程をわかりやすくするためにあえてこのように書いてます。これだけではYamlシンタックスとしては誤りなので注意してください。
 
 ### VPCの定義
 まず、VPCを定義していきます。
@@ -94,10 +97,10 @@ Resources:
 
 ```
 
-突然でてきた!Refに皆さん困惑されたのではないでしょうか。
+突然でてきた "!Ref" に皆さん困惑されたのではないでしょうか。
 
 Ref関数と呼ばれるもので、ユーザ定義パラメータや疑似パラメータ(AWSで事前定義されたパラメータ)を参照する関数です。  
-ちなみに !Ref とは Ref: xxx の短縮系です。  
+余談ですが "!Ref" とは "Ref: xxx" の短縮系です。  
 参考: [擬似パラメーター参照](https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/pseudo-parameter-reference.html)
 
 ※CloudFormationにはたくさんの関数が用意されているので、気になった人は確認してみてください。  
@@ -192,12 +195,12 @@ Resources:
 ここでは2つ新しいことをやっています。
 
 1. AWS::EC2::AvailabilityZone::Name  
-Parameters > AZ > Type で *AWS::EC2::AvailabilityZone::Name* と宣言しています。  
+*Parameters.AZ.Type* の部分で *AWS::EC2::AvailabilityZone::Name* と宣言しています。  
 これはAWS 固有のパラメータータイプです。  
 今回だと、記述することでマネコンの現在のリージョンをもとにアベイラビリティゾーンの一覧を選択することができます。  
 参考: [AWS 固有のパラメーター型](https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/parameters-section-structure.html#aws-specific-parameter-types)
 1. !Ref <論理ID>  
-最終行で !Ref MyVPC と記述していますが、Ref関数に論理IDを渡すとリソースごとに決まった値を返してくれます。
+最終行で "!Ref MyVPC" と記述していますが、Ref関数に論理IDを渡すとリソースごとに決まった値を返してくれます。
 VPCの場合、該当するVPCリソースのVPC IDを返してくれます。  
 参考: [Ref](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-ref.html)
 ```yaml
