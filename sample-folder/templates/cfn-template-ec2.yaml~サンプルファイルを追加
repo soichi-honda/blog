@@ -1,18 +1,24 @@
-# 以下のAWSリソースを作成するYamlファイルです。
-# VPC * 1 InternetGW *1
-# PublicSubnet * 1, RouteTable * 1
-# EC2 * 1, SecurityGroup * 1
+# 以下AWSリソースを作成するYamlファイルです。
+# |Resource|Number|
+# |---|---|
+# |VPC|1|
+# |InternetGW|1|
+# |Public Subnet|1|
+# |RouteTable|1|
+# |EC2|1|
+# |Security Group|1|Parameters:
 
 Parameters:
+# Common
   YYYYMMDD:
-    Description: Input the date. ex) 20200701
+    Description: Input a today's date. ex)20200704
     Type: String
   HandsonName:
-    Description: Input the handson name.
+    Description: Input a handson name. Do not change as much as possible.
     Type: String
-    Default: docker-handson #入力箇所
+    Default: turus-handson #入力
     AllowedValues: 
-      - docker-handson #入力
+      - turus-handson #入力
 
 # VPC
   VpcCidrBlock:
@@ -21,7 +27,7 @@ Parameters:
 
 # Public Subnet
   AZ:
-    Description: Input a AZ where Public Subnet will be created.
+    Description: Select a AZ where Public Subnet will be created.
     Type: AWS::EC2::AvailabilityZone::Name
   PublicSubnetCidrBlock:
     Description: Input a Public Subnet IPv4 CidrBlock.  ex) 192.168.2.0/25
@@ -33,18 +39,52 @@ Parameters:
 
 # EC2
   AmiId:
-    Description: Enter the ami-id. Default is AmazonLinux2 of quick start
+    Description: Input an ami-id. Default is AmazonLinux2 of quick start.
     Type: String
     Default: ami-0a1c2ec61571737db
-
   InstanceType:
-    Description: Enter the instance type
+    Description: Input an Instance type.
     Type: String
     Default: t3.micro
-
   KeyPair:
-    Description: Enter the key pair
+    Description: Input your key pair.
     Type: "AWS::EC2::KeyPair::KeyName"
+  InstanceName:
+    Description: Input a instance name. Do not change as much as possible.
+    Type: String
+    Default: String #入力
+    AllowedValues: 
+      - String # 入力
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      -
+        Label:
+          default: Common
+        Parameters: 
+          - YYYYMMDD
+          - HandsonName
+      -
+        Label:
+          default: VPC
+        Parameters: 
+          - VpcCidrBlock
+      -
+        Label:
+          default: Public Subnet
+        Parameters: 
+          - AZ
+          - PublicSubnetCidrBlock
+      -
+        Label:
+          default: EC2
+        Parameters: 
+          - AmiId
+          - InstanceType
+          - KeyPair
+          - InstanceName
+
 
 Resources:
 # VPC
@@ -57,11 +97,7 @@ Resources:
       InstanceTenancy: default
       Tags: 
         - Key: Name
-          Value: !Join
-            - "-"
-            - - !Ref YYYYMMDD
-              - !Ref HandsonName
-              - vpc
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-vpc
 
 # PublicSubnet
   MyPublicSubnet:
@@ -73,11 +109,7 @@ Resources:
       VpcId: !Ref MyVPC
       Tags: 
         - Key: Name
-          Value: !Join
-            - "-"
-            - - !Ref YYYYMMDD
-              - !Ref HandsonName
-              - pub-sub
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-pub-sub
 
 # InternetGW
   MyInternetGW:
@@ -85,11 +117,7 @@ Resources:
     Properties: 
       Tags: 
         - Key: Name
-          Value: !Join
-            - "-"
-            - - !Ref YYYYMMDD
-              - !Ref HandsonName
-              - igw
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-igw
   
   MyVPCGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -98,33 +126,29 @@ Resources:
       VpcId: !Ref MyVPC
 
 # RouteTable for Public Subnet
-  MyPublicRouteTable:
+  MyRouteTable:
     Type: AWS::EC2::RouteTable
     Properties: 
       VpcId: !Ref MyVPC
       Tags: 
         - Key: Name
-          Value: !Join
-            - "-"
-            - - !Ref YYYYMMDD
-              - !Ref HandsonName
-              - pub-rtb
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-pub-rtb
 
   MyPublicRoute:
     Type: AWS::EC2::Route
     Properties: 
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref MyInternetGW
-      RouteTableId: !Ref MyPublicRouteTable
+      RouteTableId: !Ref MyRouteTable
 
   MySubnetRouteTableAssociation:
       Type: AWS::EC2::SubnetRouteTableAssociation
       Properties: 
-        RouteTableId: !Ref MyPublicRouteTable
+        RouteTableId: !Ref MyRouteTable
         SubnetId: !Ref MyPublicSubnet
 
 # EC2
-  WokerInstance:
+  MyEC2Instance:
     Type: AWS::EC2::Instance
     Properties: 
       EbsOptimized: true
@@ -143,43 +167,25 @@ Resources:
             VolumeType: gp2
             DeleteOnTermination: true
       NetworkInterfaces:
-        - AssociatePublicIpAddress: true
+        - AssociatePublicIpAddress: false
           DeleteOnTermination: true
           GroupSet: 
-            - !Ref WorkerSG
+            - !Ref MySecurityGroup
           DeviceIndex: 0
           SubnetId: !Ref MyPublicSubnet
       Tags: 
         - Key: Name
-          Value: !Join
-            - "-"
-            - - !Ref YYYYMMDD
-              - !Ref HandsonName
-              - worker # 入力箇所
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-${InstanceName}
       # UserData: String
 
-# SG # 入力箇所
-  WorkerSG:
+# SG
+  MySecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties: 
       VpcId: !Ref MyVPC
-      GroupDescription: !Join
-        - " "
-        - - Security Group attached to
-          - !Join
-            - "-"
-            - - !Ref YYYYMMDD
-              - !Ref HandsonName
-              - worker
-      GroupName: !Join
-        - "_"
-        - - sg
-          - !Join
-            - "-"
-            - -  !Ref YYYYMMDD
-              - !Ref HandsonName
-              - worker
-      SecurityGroupIngress:
+      GroupDescription: !Sub Security Group attached to ${YYYYMMDD}-${HandsonName}-${InstanceName}
+      GroupName: !Sub sg_${YYYYMMDD}-${HandsonName}-${InstanceName}
+      SecurityGroupIngress: # 入力
         -   CidrIp: 0.0.0.0/0
             Description: SSH port
             FromPort: 22
@@ -187,10 +193,3 @@ Resources:
             # SourceSecurityGroupId: String
             # SourceSecurityGroupName: String
             ToPort: 22
-        -   CidrIp: 0.0.0.0/0
-            Description: Custom TCP port
-            FromPort: 8080
-            IpProtocol: tcp
-            # SourceSecurityGroupId: String
-            # SourceSecurityGroupName: String
-            ToPort: 8080
