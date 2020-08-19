@@ -43,12 +43,12 @@ Parameters:
     Default: /serverless-framework-handson/SubnetId
     AllowedValues: 
       - /serverless-framework-handson/SubnetId
-  IamRoleName:
-    Description: Input a IamRoleName. Do not change as much as possible.
+  InstanceProfileName:
+    Description: Input a InstanceProfileName. Do not change as much as possible.
     Type: AWS::SSM::Parameter::Value<String>
-    Default: /serverless-framework-handson/ServerlessRoleName
+    Default: /serverless-framework-handson/InstanceProfileName
     AllowedValues: 
-      - /serverless-framework-handson/ServerlessRoleName
+      - /serverless-framework-handson/InstanceProfileName
     
 # SG
   VpcId:
@@ -74,7 +74,7 @@ Metadata:
           - AmiId
           - InstanceType
           - SubnetId
-          - IamRoleName
+          - InstanceProfileName
           - KeyPair
           - InstanceName
       -
@@ -89,8 +89,8 @@ Resources:
     Type: AWS::EC2::Instance
     Properties: 
       EbsOptimized: true
-      IamInstanceProfile: !Ref IamRoleName
-      DisableApiTermination: true
+      IamInstanceProfile: !Ref InstanceProfileName
+      DisableApiTermination: false
       InstanceInitiatedShutdownBehavior: stop
       Monitoring: false
       Tenancy: default

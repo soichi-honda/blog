@@ -1,3 +1,8 @@
+# Yml file that builds the following AWS resources
+# |Resource|Number|
+# |---|---|
+# |IAM Role|1|
+
 Parameters:
 # Common
   YYYYMMDD:
@@ -37,19 +42,8 @@ Resources:
                 - ec2.amazonaws.com
             Action:
               - sts:AssumeRole
-      Policies:
-        - PolicyName: !Sub ${YYYYMMDD}-${HandsonName}-iam-policy
-          PolicyDocument:
-            {
-              "Version": "2012-10-17",
-              "Statement": [
-                {
-                  "Effect": "Allow",
-                  "Action": "*",
-                  "Resource": "*"
-                }
-              ]
-            }
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
 
   SSMServerlessRole:
     Type: AWS::SSM::Parameter
@@ -58,3 +52,16 @@ Resources:
       Value: !Ref ServerlessRole
       Type: String
 
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties: 
+      InstanceProfileName: !Sub ${YYYYMMDD}-${HandsonName}-iam-role
+      Roles: 
+        - !Ref ServerlessRole
+
+  SSMInstanceProfileName:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${HandsonName}/InstanceProfileName
+      Value: !Ref InstanceProfile
+      Type: String
