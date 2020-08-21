@@ -1,0 +1,56 @@
+Parameters:
+# Common
+  YYYYMMDD:
+    Description: Input a today's date. Do not change as much as possible.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /xxx-handson/YYYYMMDD
+    AllowedValues: 
+      - /xxx-handson/YYYYMMDD
+  HandsonName:
+    Description: Input a handson name. Do not change as much as possible.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /xxx-handson/HandsonName
+    AllowedValues: 
+      - /xxx-handson/HandsonName
+#ACM
+  HostedZoneId:
+    Description: Input your Route53's HostedZoneId.
+    Type: String
+  DomainName:
+    Description: Input your DomainName. ex)example.com
+    Type: String
+  SubDomainName: 
+    Description: Input Sub Domain. ex) *, test
+    Type: String
+    Default: "*"
+    
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      -
+        Label:
+          default: Common
+        Parameters: 
+          - YYYYMMDD
+          - HandsonName
+      -
+        Label:
+          default: ACM
+        Parameters: 
+          - DomainName
+          - SubDomainName
+          - HostedZoneId
+
+Resources:
+  MyACM:
+    Type: AWS::CertificateManager::Certificate
+    Properties: 
+      DomainName: !Sub ${SubDomainName}.${DomainName}
+      DomainValidationOptions:
+        - DomainName: !Sub ${SubDomainName}.${DomainName}
+          HostedZoneId: !Ref HostedZoneId
+      Tags: 
+        - Key: Name
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-acm
+      ValidationMethod: DNS
