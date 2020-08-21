@@ -1,0 +1,319 @@
+# 以下AWSリソースを作成するYamlファイルです。
+# |Resource|Number|
+# |---|---|
+# |VPC|1|
+# |InternetGW|1|
+# |Public Subnet|1|
+# |RouteTable|1|
+# |EC2|1|
+# |Security Group|1|Parameters:
+
+Parameters:
+# Common
+  YYYYMMDD:
+    Description: Input a today's date. ex)20200704
+    Type: String
+  HandsonName:
+    Description: Input a handson name. Do not change as much as possible.
+    Type: String
+    Default: turus-handson
+    AllowedValues: 
+      - turus-handson
+  AZ:
+    Description: Select a AZ where Turus Subnet will be created.
+    Type: AWS::EC2::AvailabilityZone::Name
+
+# VPC
+  VpcCidrBlock:
+    Description: Input a VPC IPv4 CidrBlock. ex) 192.168.2.0/24
+    Type: String
+
+# Turus Subnet
+  TurusSubnetCidrBlock:
+    Description: Input a Turus Subnet IPv4 CidrBlock.  ex) 192.168.2.0/25
+    Type: String
+# Web Subnet
+  WebSubnetCidrBlock:
+    Description: Input a Web Subnet IPv4 CidrBlock.  ex) 192.168.128.0/25
+    Type: String
+
+# Internet GW
+
+# RouteTable for Public Subnet
+
+# Common EC2 Parameter
+  AmiId:
+    Description: Input an ami-id. Default is AmazonLinux2 of quick start.
+    Type: String
+    Default: ami-0a1c2ec61571737db
+  KeyPair:
+    Description: Input your key pair.
+    Type: "AWS::EC2::KeyPair::KeyName"
+
+# Turus Server
+  TurusInstanceType:
+    Description: Input an Instance type.
+    Type: String
+    Default: t3.micro
+  TurusInstanceName:
+    Description: Input a instance name. Do not change as much as possible.
+    Type: String
+    Default:  turus
+    AllowedValues: 
+      - turus
+
+# Web Server
+  WebInstanceType:
+    Description: Input an Instance type.
+    Type: String
+    Default: t3.small
+  WebInstanceName:
+    Description: Input a instance name. Do not change as much as possible.
+    Type: String
+    Default: web
+    AllowedValues: 
+      - web
+
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      -
+        Label:
+          default: Common
+        Parameters: 
+          - YYYYMMDD
+          - HandsonName
+          - AZ
+      -
+        Label:
+          default: VPC
+        Parameters: 
+          - VpcCidrBlock
+      -
+        Label:
+          default: Turus Subnet
+        Parameters: 
+          - TurusSubnetCidrBlock
+      -
+        Label:
+          default: Web Subnet
+        Parameters: 
+          - WebSubnetCidrBlock
+      -
+        Label:
+          default: Commmon EC2 Parameter
+        Parameters: 
+          - AmiId
+          - KeyPair
+      -
+        Label:
+          default: Turus Server
+        Parameters: 
+          - TurusInstanceType
+          - TurusInstanceName
+        Label:
+          default: Web Server
+        Parameters: 
+          - WebInstanceType
+          - WebInstanceName
+          
+
+Resources:
+# VPC
+  MyVPC:
+    Type: AWS::EC2::VPC
+    Properties: 
+      CidrBlock: !Ref VpcCidrBlock
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      Tags: 
+        - Key: Name
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-vpc
+
+# PublicSubnet
+  TurusSubnet:
+    Type: AWS::EC2::Subnet
+    Properties: 
+      AvailabilityZone: !Ref AZ
+      CidrBlock: !Ref TurusSubnetCidrBlock
+      MapPublicIpOnLaunch: true
+      VpcId: !Ref MyVPC
+      Tags: 
+        - Key: Name
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-turus-sub
+  WebSubnet:
+    Type: AWS::EC2::Subnet
+    Properties: 
+      AvailabilityZone: !Ref AZ
+      CidrBlock: !Ref WebSubnetCidrBlock
+      MapPublicIpOnLaunch: true
+      VpcId: !Ref MyVPC
+      Tags: 
+        - Key: Name
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-web-sub
+
+# InternetGW
+  MyInternetGW:
+    Type: AWS::EC2::InternetGateway
+    Properties: 
+      Tags: 
+        - Key: Name
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-igw
+  
+  MyVPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties: 
+      InternetGatewayId: !Ref MyInternetGW
+      VpcId: !Ref MyVPC
+
+# RouteTable for Public Subnet
+  MyRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties: 
+      VpcId: !Ref MyVPC
+      Tags: 
+        - Key: Name
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-pub-rtb
+
+  MyPublicRoute:
+    Type: AWS::EC2::Route
+    Properties: 
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref MyInternetGW
+      RouteTableId: !Ref MyRouteTable
+
+  TurusSubnetRouteTableAssociation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties: 
+        RouteTableId: !Ref MyRouteTable
+        SubnetId: !Ref TurusSubnet
+  WebSubnetRouteTableAssociation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties: 
+        RouteTableId: !Ref MyRouteTable
+        SubnetId: !Ref WebSubnet
+
+# TurusServer
+  TurursInstance:
+    Type: AWS::EC2::Instance
+    Properties: 
+      EbsOptimized: true
+      # IamInstanceProfile: #入力
+      DisableApiTermination: false
+      InstanceInitiatedShutdownBehavior: stop
+      Monitoring: false
+      Tenancy: default
+      ImageId: !Ref AmiId
+      InstanceType: !Ref TurusInstanceType
+      KeyName: !Ref KeyPair
+      BlockDeviceMappings: 
+        - DeviceName: /dev/xvda
+          Ebs: 
+            VolumeSize: 8
+            VolumeType: gp2
+            DeleteOnTermination: true
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: false
+          DeleteOnTermination: true
+          GroupSet: 
+            - !Ref TurusSecurityGroup
+          DeviceIndex: 0
+          SubnetId: !Ref TurusSubnet
+      Tags: 
+        - Key: Name
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-${TurusInstanceName}
+      # UserData: String
+
+# SG
+  TurusSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      VpcId: !Ref MyVPC
+      GroupDescription: !Sub Security Group attached to ${YYYYMMDD}-${HandsonName}-${TurusInstanceName}
+      GroupName: !Sub sg_${YYYYMMDD}-${HandsonName}-${TurusInstanceName}
+      SecurityGroupIngress: # 入力
+        -   CidrIp: 0.0.0.0/0
+            Description: SSH port
+            FromPort: 22
+            IpProtocol: tcp
+            # SourceSecurityGroupId: String
+            # SourceSecurityGroupName: String
+            ToPort: 22
+
+# WebServer
+  WebInstance: 
+    Type: AWS::EC2::Instance
+    Metadata:
+      AWS::CloudFormation::Init:
+        config:
+          packeages:
+            yum:
+              httpd: []
+            services:
+              sysvinit:
+                httpd:
+                  ensureRunning: true
+                  enabled: true
+    Properties: 
+      EbsOptimized: true
+      # IamInstanceProfile: #入力
+      DisableApiTermination: false
+      InstanceInitiatedShutdownBehavior: stop
+      Monitoring: false
+      Tenancy: default
+      ImageId: !Ref AmiId
+      InstanceType: !Ref WebInstanceType
+      KeyName: !Ref KeyPair
+      BlockDeviceMappings: 
+        - DeviceName: /dev/xvda
+          Ebs: 
+            VolumeSize: 8
+            VolumeType: gp2
+            DeleteOnTermination: true
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: false
+          DeleteOnTermination: true
+          GroupSet: 
+            - !Ref WebSecurityGroup
+          DeviceIndex: 0
+          SubnetId: !Ref WebSubnet
+      Tags: 
+        - Key: Name
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-${WebInstanceName}
+      UserData: 
+        Fn::Base64:
+          !Sub |
+            #!/bin/bash
+            yum -y update
+            yum install -y aws-cfn-bootstrap
+            /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource WebInstance --region ${AWS::Region}
+            /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource WebInstance --region ${AWS::Region}
+    CreationPolicy:
+      ResourceSignal:
+        Count: 1
+        Timeout: PT5M
+
+# SG
+  WebSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      VpcId: !Ref MyVPC
+      GroupDescription: !Sub Security Group attached to ${YYYYMMDD}-${HandsonName}-${WebInstanceName}
+      GroupName: !Sub sg_${YYYYMMDD}-${HandsonName}-${WebInstanceName}
+      SecurityGroupIngress: # 入力
+        -   CidrIp: 0.0.0.0/0
+            Description: SSH port
+            FromPort: 22
+            IpProtocol: tcp
+            # SourceSecurityGroupId: String
+            # SourceSecurityGroupName: String
+            ToPort: 22
+        -   CidrIp: 0.0.0.0/0
+            Description: HTTP port
+            FromPort: 80
+            IpProtocol: tcp
+            # SourceSecurityGroupId: String
+            # SourceSecurityGroupName: String
+            ToPort: 80

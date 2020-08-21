@@ -1,0 +1,243 @@
+# 以下AWSリソースを作成するYamlファイルです。
+# |Resource|Number|
+# |---|---|
+# |EC2|1|
+# |Security Group|1|
+
+Parameters:
+# Common
+  YYYYMMDD:
+    Description: Input a today's date. ex)20200704
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /turus-handson/YYYYMMDD
+    AllowedValues:
+      - /turus-handson/YYYYMMDD
+  HandsonName:
+    Description: Input a handson name. Do not change as much as possible.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /turus-handson/HandsonName
+    AllowedValues: 
+      - /turus-handson/HandsonName
+# EC2
+  SubnetId:
+    Description: Input a handson name. Do not change as much as possible.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /turus-handson/WebSubnetId
+    AllowedValues: 
+      - /turus-handson/WebSubnetId
+  AmiId:
+    Description: Input an ami-id. Default is AmazonLinux2 of quick start.
+    Type: String
+    Default: ami-0a1c2ec61571737db
+  InstanceType:
+    Description: Input an Instance type.
+    Type: String
+    Default: t3.small
+  KeyPair:
+    Description: Input your key pair.
+    Type: "AWS::EC2::KeyPair::KeyName"
+  InstanceName:
+    Description: Input a instance name. Do not change as much as possible.
+    Type: String
+    Default: web
+    AllowedValues: 
+      - web
+# SG
+  VpcId:
+    Description: Input a handson name. Do not change as much as possible.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /turus-handson/VpcId 
+    AllowedValues: 
+      - /turus-handson/VpcId
+      
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      -
+        Label:
+          default: Common
+        Parameters: 
+          - YYYYMMDD
+          - HandsonName
+      -
+        Label:
+          default: EC2
+        Parameters: 
+          - AmiId
+          - InstanceType
+          - KeyPair
+          - InstanceName
+      -
+        Label:
+          default: SG
+        Parameters: 
+          - VpcId
+
+Resources:
+# EC2
+  WebInstance: 
+    Type: AWS::EC2::Instance
+    Metadata:
+      AWS::CloudFormation::Init:
+        config:
+          packages:
+            yum:
+              httpd: []
+          services:
+            sysvinit:
+              httpd:
+                ensureRunning: true
+                enabled: true
+          files:
+            /var/www/html/index.html:
+              content: |
+                <!DOCTYPE html>
+
+                <html lang="ja">
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>Index</title>
+                    </head>
+                    <body>
+                        <button type="button" id="login">Login</button>
+                    </body>
+                </html>
+
+                <script>
+                    document.getElementById("login").onclick = function(){
+                        location.href = ''
+                    }
+                </script>
+              mode: "000644"
+              owner: root
+              group: root
+
+            /var/www/html/login.html:
+              content: |
+                <!DOCTYPE html>
+                <html lang="ja">
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>Login</title>
+                    </head>
+                    <body>
+                        <p>Please Input ID and Password</p>
+                        <form id="login_form">
+                            <p>
+                                <label>ID:</label>
+                                <input type="text" id="id">
+                            </p>
+                            <p>
+                                <label>Password:</label>
+                                <input type="password" id="password">
+                            </p>
+                            <p>
+                                <input type="button" id="submit" value="Login">
+                            </p>
+                        </form>
+                        <div id="output"></div>
+                    </body>
+                </html>
+                <script>
+                    var id = document.getElementById("id");
+                    var password = document.getElementById("password");
+                    var submit_botton = document.getElementById("submit");
+                    var output = document.getElementById("output");
+
+                    submit.addEventListener("click", function() {
+                        if (id.value == "admin" && password.value == "passwd"){
+                            location.href = "mypage.html";
+                        }else{
+                            output.innerHTML = "You have input the wrong ID or password.<br>Please submit the from again.";
+                        }
+                    })
+                </script>
+              mode: "000644"
+              owner: root
+              group: root
+
+            /var/www/html/mypage.html:
+              content: |
+                <!DOCTYPE html>
+                <html lang="ja">
+                    <head>
+                        <meta charset="utf-8">
+                        <title>Mypage</title>
+                    </head>
+                    <body>
+                        <p>Success to login!</p>
+                        <input type="button" id="logout" value="Logout">
+                    </body>
+                </html>
+                <script>
+                    var logout = document.getElementById("logout");
+                    logout.addEventListener("click", function() {
+                        location.href="index.html"
+                    })
+                </script>
+              mode: "000644"
+              owner: root
+              group: root
+            
+    Properties: 
+      EbsOptimized: true
+      # IamInstanceProfile: #入力
+      DisableApiTermination: false
+      InstanceInitiatedShutdownBehavior: stop
+      Monitoring: false
+      Tenancy: default
+      ImageId: !Ref AmiId
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyPair
+      BlockDeviceMappings: 
+        - DeviceName: /dev/xvda
+          Ebs: 
+            VolumeSize: 8
+            VolumeType: gp2
+            DeleteOnTermination: true
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          DeleteOnTermination: true
+          GroupSet: 
+            - !Ref WebSecurityGroup
+          DeviceIndex: 0
+          SubnetId: 
+            !Ref SubnetId
+      Tags: 
+        - Key: Name
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-${InstanceName}
+      UserData: 
+        Fn::Base64:
+          !Sub |
+            #!/bin/bash
+            yum -y update
+            yum install -y aws-cfn-bootstrap
+            /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource WebInstance --region ${AWS::Region}
+            /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource WebInstance --region ${AWS::Region}
+    CreationPolicy:
+      ResourceSignal:
+        Count: 1
+        Timeout: PT2M
+
+# SG
+  WebSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      VpcId: !Ref VpcId
+      GroupDescription: !Sub Security Group attached to ${YYYYMMDD}-${HandsonName}-${InstanceName}
+      GroupName: !Sub sg_${YYYYMMDD}-${HandsonName}-${InstanceName}
+      SecurityGroupIngress: # 入力
+        -   CidrIp: 0.0.0.0/0
+            Description: SSH port
+            FromPort: 22
+            IpProtocol: tcp
+            # SourceSecurityGroupId: String
+            # SourceSecurityGroupName: String
+            ToPort: 22
+        -   CidrIp: 0.0.0.0/0
+            Description: HTTP port
+            FromPort: 80
+            IpProtocol: tcp
+            # SourceSecurityGroupId: String
+            # SourceSecurityGroupName: String
+            ToPort: 80
