@@ -7,9 +7,8 @@
 ## pythonスクリプトについて
 今回、2つのpythonスクリプトを用意しました。
 
-- [post_hatena.py|https://github.com/sugaya0204/blog/blob/Public/TF/automating-hatena-blog/src/post_hatena.py]
-- [execution.py|https://github.com/sugaya0204/blog/blob/Public/TF/automating-hatena-blog/src/execution.py]
-
+- [post_hatena.py](https://github.com/sugaya0204/blog/blob/Public/Tips/automating-hatena-blog/src/post_hatena.py)
+- [execution.py](https://github.com/sugaya0204/blog/blob/Public/Tips/automating-hatena-blog/src/execution.py)
 ---
 
 要点をざっくり解説します。
@@ -25,14 +24,14 @@
 
 認証はBasic認証を使用します。
 
-参考: [はてなブログAtomPub-ブログエントリの投稿|http://developer.hatena.ne.jp/ja/documents/blog/apis/atom]
+参考: [はてなブログAtomPub-ブログエントリの投稿](http://developer.hatena.ne.jp/ja/documents/blog/apis/atom)
 
 #### "PostHatenaPhoto"クラス
 はてなフォトライフに、PNG形式の画像ファイルをアップロードします。
 
 認証にはWSSE認証を使用します(*1)。
 
-参考: [はてなフォトライフAtomAPI-PostURI|http://developer.hatena.ne.jp/ja/documents/fotolife/apis/atom]
+参考: [はてなフォトライフAtomAPI-PostURI](http://developer.hatena.ne.jp/ja/documents/fotolife/apis/atom)
 
 *1. Oauth認証を使いたかったのですが、どうしてもCLIで完結できなかったため、WSSE認証を使用しています。
 
@@ -100,8 +99,8 @@ export HATENA_ID='<自分のはてなID>'
 
 先ほどのpythonスクリプトを実行環境に保存します。
 
-- [post_hatena.py|https://github.com/sugaya0204/blog/blob/Public/TF/automating-hatena-blog/src/post_hatena.py]
-- [execution.py|https://github.com/sugaya0204/blog/blob/Public/TF/automating-hatena-blog/src/execution.py]
+- [post_hatena.py](https://github.com/sugaya0204/blog/blob/Public/Tips/automating-hatena-blog/src/post_hatena.py)
+- [execution.py](https://github.com/sugaya0204/blog/blob/Public/Tips/automating-hatena-blog/src/execution.py)
 
 以下フォルダを作成して、保存しましょう。
 
@@ -126,10 +125,10 @@ $ tree
 今回はデモとして以下をアップロードしてみましょう。
 
 - 記事本文
-[test.md|]
+[test.md](https://github.com/sugaya0204/blog/blob/Public/Tips/automating-hatena-blog/hatena_demo/test.md)
 - 画像ファイル
-[test-image-green.png|]
-[test-image-red.PNG|]
+[test-image-green.png](https://github.com/sugaya0204/blog/blob/Public/Tips/automating-hatena-blog/hatena_demo/assets/test-image-green.png)
+[test-image-red.PNG](https://github.com/sugaya0204/blog/blob/Public/Tips/automating-hatena-blog/hatena_demo/assets/test-image-red.PNG)
 
 これらを以下フォルダ構成で保存してください。
 
