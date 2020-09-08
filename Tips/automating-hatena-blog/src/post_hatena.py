@@ -40,6 +40,8 @@ If you don\'t like it, enter "no" or "n".
         with open(file_path) as f:
             post_body = f.read()
             f.close()
+        post_body = post_body.replace("<", "&lt;")
+        post_body = post_body.replace(">", "&gt;")
         xml_post_body = self.xml_template.format(title, self.hatena_id, post_body,)
         return xml_post_body
 
