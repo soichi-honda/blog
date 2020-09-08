@@ -9,13 +9,15 @@ import re
 
 
 class PostHatena:
-    def __init__(self, endpoint, dir_path, file_filter_pattern, xml_template, hatena_id, api_key):
+    def __init__(self, endpoint, dir_path, file_filter_pattern, xml_template, hatena_id, api_key, text_attr="None"):
         self.endpoint = endpoint
         self.dir_path = dir_path
         self.file_filter_pattern = file_filter_pattern 
         self.xml_template = xml_template
         self.hatena_id = hatena_id
         self.api_key = api_key
+        if not text_attr == "None":
+            self.text_attr = text_attr
 
     def extract_file_path(self):
         file_paths = [ self.dir_path + f for f in os.listdir(self.dir_path) if re.match(self.file_filter_pattern, f, re.IGNORECASE)]
@@ -36,11 +38,15 @@ If you don\'t like it, enter "no" or "n".
         return file_paths
 
     def make_xml_post_body(self, file_path):
-        title = file_path.split('/')[-1]
+        title = self.text_attr.get('title')
+        category = self.text_attr.get('category', '')
+        draft = self.text_attr.get('draft', 'yes')
         with open(file_path) as f:
             post_body = f.read()
             f.close()
-        xml_post_body = self.xml_template.format(title, self.hatena_id, post_body,)
+        post_body = post_body.replace("<", "&lt;")
+        post_body = post_body.replace(">", "&gt;")
+        xml_post_body = self.xml_template.format(title, self.hatena_id, post_body, category, draft)
         return xml_post_body
 
     def create_auth_headers(self):
@@ -59,13 +65,17 @@ Status Code:{res.status_code}
 -----
 ''')
         soup = BeautifulSoup(res.content, 'xml')
-        response_url = soup.find('link').get('href')
+        entry_id = soup.find('link').get('href').split('/')[-1]
         print(f'''-----
 Success!
-URL: {response_url}
+EntryId: {entry_id}
 -----
 ''')
-        return response_url
+        return entry_id
+
+    def add_entry_id(self, entry_id):
+        self.text_attr["entry_id"] = entry_id
+        return self.text_attr
 
 class PostHatenaPhoto(PostHatena):
     def make_xml_post_body(self, file_path):
@@ -88,8 +98,7 @@ class PostHatenaPhoto(PostHatena):
             wsse = f'UsernameToken Username="{self.hatena_id}", PasswordDigest="{password_digest_base64}", Nonce="{nonce_base64}", Created="{created}"'
             headers['X-WSSE'] = wsse
             return headers
-
-
+        
 
 
 
