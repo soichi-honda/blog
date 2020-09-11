@@ -1,0 +1,132 @@
+# Yml file that builds the following AWS resources
+# |Resource|Number|
+# |---|---|
+# |EC2|1|
+# |Security Group|1|
+
+Parameters:
+# Common
+  YYYYMMDD:
+    Description: Input a today's date. Do not change as much as possible.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /serverless-framework-handson/YYYYMMDD
+    AllowedValues: 
+      - /serverless-framework-handson/YYYYMMDD
+  HandsonName:
+    Description: Input a handson name. Do not change as much as possible.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /serverless-framework-handson/HandsonName
+    AllowedValues: 
+      - /serverless-framework-handson/HandsonName
+
+# EC2
+  AmiId:
+    Description: Input an ami-id. Default is AmazonLinux2 of quick start.
+    Type: String
+    Default: ami-0a1c2ec61571737db
+  InstanceType:
+    Description: Input an Instance type.
+    Type: String
+    Default: t3.micro
+  KeyPair:
+    Description: Input your key pair.
+    Type: "AWS::EC2::KeyPair::KeyName"
+  InstanceName:
+    Description: Input a instance name. Do not change as much as possible.
+    Type: String
+    Default: ap
+    AllowedValues: 
+      - ap
+  SubnetId:
+    Description: Input a SubnetId. Do not change as much as possible.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /serverless-framework-handson/SubnetId
+    AllowedValues: 
+      - /serverless-framework-handson/SubnetId
+  InstanceProfileName:
+    Description: Input a InstanceProfileName. Do not change as much as possible.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /serverless-framework-handson/InstanceProfileName
+    AllowedValues: 
+      - /serverless-framework-handson/InstanceProfileName
+    
+# SG
+  VpcId:
+    Description: Input a handson name. Do not change as much as possible.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /serverless-framework-handson/VpcId 
+    AllowedValues: 
+      - /serverless-framework-handson/VpcId
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      -
+        Label:
+          default: Common
+        Parameters: 
+          - YYYYMMDD
+          - HandsonName
+      -
+        Label:
+          default: EC2
+        Parameters: 
+          - AmiId
+          - InstanceType
+          - SubnetId
+          - InstanceProfileName
+          - KeyPair
+          - InstanceName
+      -
+        Label:
+          default: SG
+        Parameters: 
+          - VpcId
+
+Resources:
+# EC2
+  MyInstance:
+    Type: AWS::EC2::Instance
+    Properties: 
+      EbsOptimized: true
+      IamInstanceProfile: !Ref InstanceProfileName
+      DisableApiTermination: false
+      InstanceInitiatedShutdownBehavior: stop
+      Monitoring: false
+      Tenancy: default
+      ImageId: !Ref AmiId
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyPair
+      BlockDeviceMappings: 
+        - DeviceName: /dev/xvda
+          Ebs: 
+            VolumeSize: 8
+            VolumeType: gp2
+            DeleteOnTermination: true
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          DeleteOnTermination: true
+          GroupSet: 
+            - !Ref MySG
+          DeviceIndex: 0
+          SubnetId: !Ref SubnetId
+      Tags: 
+        - Key: Name
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-${InstanceName}
+      # UserData: String
+
+# SG
+  MySG:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      VpcId: !Ref VpcId
+      GroupDescription: !Sub Security Group attached to ${YYYYMMDD}-${HandsonName}-${InstanceName}
+      GroupName: !Sub sg_${YYYYMMDD}-${HandsonName}-${InstanceName}
+      SecurityGroupIngress: # 入力
+        -   CidrIp: 0.0.0.0/0
+            Description: SSH port
+            FromPort: 22
+            IpProtocol: tcp
+            # SourceSecurityGroupId: String
+            # SourceSecurityGroupName: String
+            ToPort: 22
