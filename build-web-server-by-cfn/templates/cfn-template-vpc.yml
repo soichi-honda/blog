@@ -1,0 +1,136 @@
+# A Yaml file that creates the following AWS resources.
+# |Resource|Number|
+# |---|---|
+# |VPC|1|
+# |InternetGW|1|
+# |Public Subnet|1|
+# |RouteTable|1|
+
+# Common
+Parameters:
+  YYYYMMDD:
+    Description: Input a today's date. ex)20200704
+    Type: String
+  HandsonName:
+    Description: Input a handson name. Do not change as much as possible.
+    Type: String
+    Default: cfn-handson
+    AllowedValues: 
+      - cfn-handson
+
+# VPC
+  VpcCidrBlock:
+    Description: Input a VPC IPv4 CidrBlock. ex) 192.168.2.0/24
+    Type: String
+
+# Public Subnet
+  AZ:
+    Description: Select a AZ where Public Subnet will be created.
+    Type: AWS::EC2::AvailabilityZone::Name
+  PublicSubnetCidrBlock:
+    Description: Input a Public Subnet IPv4 CidrBlock.  ex) 192.168.2.0/25
+    Type: String
+
+# Internet GW
+
+# RouteTable for Public Subnet
+
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      -
+        Label:
+          default: Common
+        Parameters: 
+          - YYYYMMDD
+          - HandsonName
+      -
+        Label:
+          default: VPC
+        Parameters: 
+          - VpcCidrBlock
+      -
+        Label:
+          default: Public Subnet
+        Parameters: 
+          - AZ
+          - PublicSubnetCidrBlock
+
+
+Resources:
+# VPC
+  MyVPC:
+    Type: AWS::EC2::VPC
+    Properties: 
+      CidrBlock: !Ref VpcCidrBlock
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      Tags: 
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref YYYYMMDD
+              - !Ref HandsonName
+              - vpc
+
+# PublicSubnet
+  MyPublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties: 
+      AvailabilityZone: !Ref AZ
+      CidrBlock: !Ref PublicSubnetCidrBlock
+      MapPublicIpOnLaunch: true
+      VpcId: !Ref MyVPC
+      Tags: 
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref YYYYMMDD
+              - !Ref HandsonName
+              - pub-sub
+
+# InternetGW
+  MyInternetGW:
+    Type: AWS::EC2::InternetGateway
+    Properties: 
+      Tags: 
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref YYYYMMDD
+              - !Ref HandsonName
+              - igw
+  
+  MyVPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties: 
+      InternetGatewayId: !Ref MyInternetGW
+      VpcId: !Ref MyVPC
+
+# RouteTable for Public Subnet
+  MyRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties: 
+      VpcId: !Ref MyVPC
+      Tags: 
+        - Key: Name
+          Value: !Join
+            - "-"
+            - - !Ref YYYYMMDD
+              - !Ref HandsonName
+              - pub-rtb
+
+  MyPublicRoute:
+    Type: AWS::EC2::Route
+    Properties: 
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref MyInternetGW
+      RouteTableId: !Ref MyRouteTable
+
+  MySubnetRouteTableAssociation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties: 
+        RouteTableId: !Ref MyRouteTable
+        SubnetId: !Ref MyPublicSubnet

@@ -1,0 +1,49 @@
+# 以下AWSリソースを作成するYamlファイルです。
+# |Resource|Number|
+# |---|---|
+# |IAMPolicy|1|
+
+Parameters:
+# Common
+  YYYYMMDD:
+    Description: Input a today's date. Do not change as much as possible.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /serverless-framework-handson/YYYYMMDD
+    AllowedValues: 
+      - /serverless-framework-handson/YYYYMMDD
+  HandsonName:
+    Description: Input a handson name. Do not change as much as possible.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /serverless-framework-handson/HandsonName
+    AllowedValues: 
+      - /serverless-framework-handson/HandsonName
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      -
+        Label:
+          default: Common
+        Parameters: 
+          - YYYYMMDD
+          - HandsonName
+
+Resources:
+  ServerlessPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: !Sub ${Prefix}-iam-policy
+      PolicyDocument: 
+        { 
+          "Version": "2012-10-17",
+          "Statement": [
+          ]
+        }
+
+  SSMServerlessPolicy:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${HandsonName}/ServerlessPolicyName
+      Value: !Ref ServerlessPolicy
+      Type: String
+

@@ -1,0 +1,67 @@
+# Yml file that builds the following AWS resources
+# |Resource|Number|
+# |---|---|
+# |IAM Role|1|
+
+Parameters:
+# Common
+  YYYYMMDD:
+    Description: Input a today's date. Do not change as much as possible.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /serverless-framework-handson/YYYYMMDD
+    AllowedValues: 
+      - /serverless-framework-handson/YYYYMMDD
+  HandsonName:
+    Description: Input a handson name. Do not change as much as possible.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /serverless-framework-handson/HandsonName
+    AllowedValues: 
+      - /serverless-framework-handson/HandsonName
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      -
+        Label:
+          default: Common
+        Parameters: 
+          - YYYYMMDD
+          - HandsonName
+
+Resources:
+  ServerlessRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${YYYYMMDD}-${HandsonName}-iam-role
+      AssumeRolePolicyDocument: 
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+
+  SSMServerlessRole:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${HandsonName}/ServerlessRoleName
+      Value: !Ref ServerlessRole
+      Type: String
+
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties: 
+      InstanceProfileName: !Sub ${YYYYMMDD}-${HandsonName}-iam-role
+      Roles: 
+        - !Ref ServerlessRole
+
+  SSMInstanceProfileName:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${HandsonName}/InstanceProfileName
+      Value: !Ref InstanceProfile
+      Type: String

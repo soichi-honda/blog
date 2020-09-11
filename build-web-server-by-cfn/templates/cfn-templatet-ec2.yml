@@ -1,0 +1,110 @@
+# A Yaml file that creates the following AWS resources.
+# |Resource|Number|
+# |---|---|
+# |EC2|1|
+# |SG|1|
+
+Parameters:
+  VpcId:
+    Description: Select your vpc id.
+    Type: AWS::EC2::VPC::Id
+  SubnetId:
+    Description: Select your subnet id that exits in your selected vpc.
+    Type: AWS::EC2::Subnet::Id
+  KeyName: 
+    Description: Select your key pair.
+    Type: AWS::EC2::KeyPair::KeyName
+  YYYYMMDD:
+    Description: Input a today's date. ex)20200704
+    Type: String
+  HandsonName:
+    Description: Input a handson name. Do not change as much as possible.
+    Type: String
+    Default: cfn-handson
+    AllowedValues: 
+      - cfn-handson
+  InstanceName:
+    Description: Input a instance name. Do not change as much as possible.
+    Type: String
+    Default: web
+    AllowedValues: 
+      - web
+
+
+Resources:
+  WebServer:
+    Type: AWS::EC2::Instance
+    Metadata:
+      AWS::CloudFormation::Init:
+        config:
+          packages:
+            yum:
+              httpd: []
+          services:
+            sysvinit:
+              httpd:
+                ensureRunning: true
+                enabled: true
+          files:
+            /var/www/html/index.html:
+              content: |
+                <html>
+                  <head>
+                    <title>test</title>
+                  </head>
+                  <body>
+                    <p>Success to deploy WebServer</p>
+                  </body>
+                </html>
+              mode: "000644"
+              owner: root
+              group: root
+    Properties: 
+      BlockDeviceMappings: 
+      - DeviceName: /dev/xvda
+        Ebs: 
+          VolumeSize: 8
+          VolumeType: gp2
+          DeleteOnTermination: true
+      ImageId: ami-0a1c2ec61571737db
+      InstanceType: t3.micro
+      KeyName: !Ref KeyName
+      NetworkInterfaces: 
+        - AssociatePublicIpAddress: true
+          DeleteOnTermination: true
+          GroupSet: 
+            - !Ref WebSG
+          DeviceIndex: 0
+          SubnetId: !Ref SubnetId
+      Tags: 
+        - Key: Name
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-${InstanceName}
+      UserData: 
+        Fn::Base64:
+          !Sub |
+            #!/bin/bash
+            yum -y update
+            /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource WebServer --region ${AWS::Region}
+            /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource WebServer --region ${AWS::Region}
+    CreationPolicy:
+      ResourceSignal:
+        Count: 1
+        Timeout: PT5M
+
+  WebSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      GroupDescription: !Sub Security Group attached to ${YYYYMMDD}-${HandsonName}-${InstanceName}
+      GroupName: !Sub sg_${YYYYMMDD}-${HandsonName}-${InstanceName}
+      SecurityGroupIngress: 
+        - CidrIp: 0.0.0.0/0
+          Description: SSH port
+          FromPort: 22
+          IpProtocol: tcp
+          ToPort: 22
+        - CidrIp: 0.0.0.0/0
+          Description: HTTP port
+          FromPort: 80
+          IpProtocol: tcp
+          ToPort: 80
+      VpcId: !Ref VpcId
