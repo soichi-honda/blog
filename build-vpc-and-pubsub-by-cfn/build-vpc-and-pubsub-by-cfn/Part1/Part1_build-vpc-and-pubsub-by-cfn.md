@@ -346,4 +346,6 @@ Resources:
 
 後半では、実際に作ったテンプレート流していきます。
 
+[【初心者向け】VPC+PublicSubnetをCloudFormationを使って構築する 後編](https://blog.serverworks.co.jp/build-vpc-and-pubsub-by-cfn-2)
+
 ご覧いただきありがとうございました。

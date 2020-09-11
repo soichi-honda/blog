@@ -3,15 +3,15 @@ Parameters:
   YYYYMMDD:
     Description: Input a today's date. Do not change as much as possible.
     Type: AWS::SSM::Parameter::Value<String>
-    Default: /xxx-handson/YYYYMMDD
+    Default: /docker-handson/YYYYMMDD
     AllowedValues: 
-      - /xxx-handson/YYYYMMDD
+      - /docker-handson/YYYYMMDD
   HandsonName:
     Description: Input a handson name. Do not change as much as possible.
     Type: AWS::SSM::Parameter::Value<String>
-    Default: /xxx-handson/HandsonName
+    Default: /docker-handson/HandsonName
     AllowedValues: 
-      - /xxx-handson/HandsonName
+      - /docker-handson/HandsonName
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -37,19 +37,9 @@ Resources:
                 - ec2.amazonaws.com
             Action:
               - sts:AssumeRole
-      Policies:
-        - PolicyName: !Sub ${YYYYMMDD}-${HandsonName}-iam-policy
-          PolicyDocument: #入力
-            {
-              "Version": "2012-10-17",
-              "Statement": [
-                {
-                  "Effect": "Allow",
-                  "Action": "*",
-                  "Resource": "*"
-                }
-              ]
-            }
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess
+
 
   InstanceProfile:
     Type: AWS::IAM::InstanceProfile

@@ -1,0 +1,67 @@
+Parameters:
+# Common
+  YYYYMMDD:
+    Description: Input a today's date. Do not change as much as possible.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /xxx-handson/YYYYMMDD
+    AllowedValues: 
+      - /xxx-handson/YYYYMMDD
+  HandsonName:
+    Description: Input a handson name. Do not change as much as possible.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /xxx-handson/HandsonName
+    AllowedValues: 
+      - /xxx-handson/HandsonName
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      -
+        Label:
+          default: Common
+        Parameters: 
+          - YYYYMMDD
+          - HandsonName
+
+Resources:
+  IamRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${YYYYMMDD}-${HandsonName}-iam-role
+      AssumeRolePolicyDocument: 
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: !Sub ${YYYYMMDD}-${HandsonName}-iam-policy
+          PolicyDocument: #入力
+            {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": "*",
+                  "Resource": "*"
+                }
+              ]
+            }
+
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties: 
+      InstanceProfileName: !Sub ${YYYYMMDD}-${HandsonName}-iam-role
+      Roles: 
+        - !Ref IamRole
+
+  SSMInstanceProfileName:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${HandsonName}/InstanceProfileName
+      Value: !Ref InstanceProfile
+      Type: String
+
