@@ -16,7 +16,7 @@
 今回使うテンプレートファイルは前編で作ったものを利用します。  
 ローカルに保存していない人は下記をYml形式で保存しておいてください。
 
-[templates/cfn-template.yml](https://github.com/sugaya0204/blog/blob/Public/build-vpc-and-pubsub-by-cfn/templates/cfn-template.yml)
+[templates/cfn-template.yml](https://github.com/sugaya0204/blog/blob/Public/AWS/build-vpc-and-pubsub-by-cfn/templates/cfn-template.yml)
 
 ### CloudFomationの利用
 

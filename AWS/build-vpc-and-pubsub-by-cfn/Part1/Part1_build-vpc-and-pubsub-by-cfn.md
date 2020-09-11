@@ -337,7 +337,7 @@ Resources:
 ということでテンプレートファイルができました。
 こちらが完成版となります。
 
-[cfn-template.yml](https://github.com/sugaya0204/blog/blob/Public/build-vpc-and-pubsub-by-cfn/templates/cfn-template.yml)
+[cfn-template.yml](https://github.com/sugaya0204/blog/blob/Public/AWS/build-vpc-and-pubsub-by-cfn/templates/cfn-template.yml)
 
 ## まとめ
 前編ではCloudFormationで使うテンプレートファイルの書き方についてまとめました。
