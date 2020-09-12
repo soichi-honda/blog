@@ -1,0 +1,145 @@
+# Yml file that builds the following AWS resources
+# |Resource|Number|
+# |---|---|
+# |EC2|1|
+# |EIP|1|
+# |Security Group|1|
+
+Parameters:
+# Common
+  YYYYMMDD:
+    Description: Input a today's date. Do not change as much as possible.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /smtp-handson/YYYYMMDD
+    AllowedValues: 
+      - /smtp-handson/YYYYMMDD
+  HandsonName:
+    Description: Input a handson name. Do not change as much as possible.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /smtp-handson/HandsonName
+    AllowedValues: 
+      - /smtp-handson/HandsonName
+
+# EC2
+  AmiId:
+    Description: Input an ami-id. Default is AmazonLinux2 of quick start.
+    Type: String
+    Default: ami-0a1c2ec61571737db
+  InstanceType:
+    Description: Input an Instance type.
+    Type: String
+    Default: t3.micro
+  KeyPair:
+    Description: Input your key pair.
+    Type: "AWS::EC2::KeyPair::KeyName"
+  InstanceName:
+    Description: Input a instance name. Do not change as much as possible.
+    Type: String
+    Default: server
+    AllowedValues: 
+      - server
+  SubnetId:
+    Description: Input a SubnetId. Do not change as much as possible.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /smtp-handson/SubnetId/Server
+    AllowedValues: 
+      - /smtp-handson/SubnetId/Server
+
+# SG
+  VpcId:
+    Description: Input a handson name. Do not change as much as possible.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /smtp-handson/VpcId 
+    AllowedValues: 
+      - /smtp-handson/VpcId
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      -
+        Label:
+          default: Common
+        Parameters: 
+          - YYYYMMDD
+          - HandsonName
+      -
+        Label:
+          default: EC2
+        Parameters: 
+          - AmiId
+          - SubnetId
+          - InstanceType
+          - KeyPair
+          - InstanceName
+      -
+        Label:
+          default: SG
+        Parameters: 
+          - VpcId
+
+Resources:
+# EC2
+  MyInstance:
+    Type: AWS::EC2::Instance
+    Properties: 
+      EbsOptimized: true
+      # IamInstanceProfile: #入力
+      DisableApiTermination: false
+      InstanceInitiatedShutdownBehavior: stop
+      Monitoring: false
+      Tenancy: default
+      ImageId: !Ref AmiId
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyPair
+      BlockDeviceMappings: 
+        - DeviceName: /dev/xvda
+          Ebs: 
+            VolumeSize: 8
+            VolumeType: gp2
+            DeleteOnTermination: true
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          DeleteOnTermination: true
+          GroupSet: 
+            - !Ref MySG
+          DeviceIndex: 0
+          SubnetId: !Ref SubnetId
+      Tags: 
+        - Key: Name
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-${InstanceName}
+      # UserData: String
+
+# EIP
+  MyEIP: 
+    Type: AWS::EC2::EIP
+    Properties:
+      InstanceId: !Ref MyInstance
+      Tags: 
+        - Key: Name
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-${InstanceName}
+
+# SG
+  MySG:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      VpcId: !Ref VpcId
+      GroupDescription: !Sub Security Group attached to ${YYYYMMDD}-${HandsonName}-${InstanceName}
+      GroupName: !Sub sg_${YYYYMMDD}-${HandsonName}-${InstanceName}
+      SecurityGroupIngress: # 入力
+        -   CidrIp: 0.0.0.0/0
+            Description: SSH port
+            FromPort: 22
+            IpProtocol: tcp
+            # SourceSecurityGroupId: String
+            # SourceSecurityGroupName: String
+            ToPort: 22
+        -   CidrIp: 0.0.0.0/0
+            Description: SMTP port
+            FromPort: 25
+            IpProtocol: tcp
+            # SourceSecurityGroupId: String
+            # SourceSecurityGroupName: String
+            ToPort: 25
+
+
+
