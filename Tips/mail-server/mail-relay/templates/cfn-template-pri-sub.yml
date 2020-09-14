@@ -1,0 +1,129 @@
+# Yml file that builds the following AWS resources
+# |Resource|Number|
+# |---|---|
+# |Private Subnet|1|
+# |EIP|1|
+# |NATGW|1|
+
+Parameters:
+# Common
+  YYYYMMDD:
+    Description: Input a today's date. Do not change as much as possible.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /smtp-handson/YYYYMMDD
+    AllowedValues:
+      - /smtp-handson/YYYYMMDD
+  HandsonName:
+    Description: Input a handson name. Do not change as much as possible.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /smtp-handson/HandsonName
+    AllowedValues:
+      - /smtp-handson/HandsonName
+
+# PrivateSubnet
+  VpcId:
+    Description: Input the VPC ID of "YYYYMMDD-smtp-handson-vpc." Do not change as much as possible.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /smtp-handson/VpcId
+    AllowedValues:
+      - /smtp-handson/VpcId
+  AZ:
+    Description: Select a AZ where Private Subnet will be created. ex) ap-northeast-1a
+    Type: AWS::EC2::AvailabilityZone::Name
+  PrivateSubnetCidrBlock:
+    Description: Input a Private Subnet IPv4 CidrBlock.  ex) 192.168.2.128/25
+    Type: String
+
+# NatGW
+  SubnetId:
+    Description: Input the Subnet ID of "YYYYMMDD-smtp-handson-pub-sub." Do not change as much as possible.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /smtp-handson/SubnetId/Server
+    AllowedValues:
+      - /smtp-handson/SubnetId/Server
+
+# RouteTable for Private Subnet
+
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      -
+        Label:
+          default: Common
+        Parameters:
+          - YYYYMMDD
+          - HandsonName
+      -
+        Label:
+          default: PrivateSubnet
+        Parameters:
+          - VpcId
+          - AZ
+          - PrivateSubnetCidrBlock
+      -
+        Label:
+          default: NatGW
+        Parameters:
+          - SubnetId
+
+Resources:
+# PrivateSubnet
+  MySubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Ref AZ
+      CidrBlock: !Ref PrivateSubnetCidrBlock
+      MapPublicIpOnLaunch: false
+      VpcId: !Ref VpcId
+      Tags:
+        - Key: Name
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-pub-sub-client
+
+# EIP
+  MyEIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-ngw
+
+# NatGW
+  MyNatGW:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt MyEIP.AllocationId
+      SubnetId: !Ref SubnetId
+      Tags:
+        - Key: Name
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-ngw
+
+# RouteTable for Private Subnet
+  MyRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VpcId
+      Tags:
+        - Key: Name
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-pri-rtb
+
+  MyNatRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref MyNatGW
+      RouteTableId: !Ref MyRouteTable
+
+  MySubnetRouteTableAssociation:
+      Type: AWS::EC2::SubnetRouteTableAssociation
+      Properties:
+        RouteTableId: !Ref MyRouteTable
+        SubnetId: !Ref MySubnet
+
+# SSM Parameter
+  SSMSubnetId:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${HandsonName}/SubnetId/Client
+      Value: !Ref MySubnet
+      Type: String
