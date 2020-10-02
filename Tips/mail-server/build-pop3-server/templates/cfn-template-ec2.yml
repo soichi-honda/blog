@@ -2,7 +2,6 @@
 # |Resource|Number|
 # |---|---|
 # |EC2|1|
-# |EIP|1|
 # |Security Group|1|
 
 Parameters:
@@ -35,9 +34,9 @@ Parameters:
   InstanceName:
     Description: Input a instance name. Do not change as much as possible.
     Type: String
-    Default: server
+    Default: pop3-client
     AllowedValues: 
-      - server
+      - pop3-client
   SubnetId:
     Description: Input a SubnetId. Do not change as much as possible.
     Type: AWS::SSM::Parameter::Value<String>
@@ -109,15 +108,6 @@ Resources:
           Value: !Sub ${YYYYMMDD}-${HandsonName}-${InstanceName}
       # UserData: String
 
-# EIP
-  MyEIP: 
-    Type: AWS::EC2::EIP
-    Properties:
-      InstanceId: !Ref MyInstance
-      Tags: 
-        - Key: Name
-          Value: !Sub ${YYYYMMDD}-${HandsonName}-${InstanceName}
-
 # SG
   MySG:
     Type: AWS::EC2::SecurityGroup
@@ -133,13 +123,3 @@ Resources:
             # SourceSecurityGroupId: String
             # SourceSecurityGroupName: String
             ToPort: 22
-        -   CidrIp: 0.0.0.0/0
-            Description: SMTP port
-            FromPort: 25
-            IpProtocol: tcp
-            # SourceSecurityGroupId: String
-            # SourceSecurityGroupName: String
-            ToPort: 25
-
-
-
