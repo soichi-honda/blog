@@ -3,7 +3,7 @@
 # |---|---|
 # |VPC|1|
 # |InternetGW|1|
-# |Public Subnet|2|
+# |Public Subnet|1|
 # |RouteTable|1|
 
 Parameters:
@@ -26,20 +26,12 @@ Parameters:
     Description: Input a VPC IPv4 CidrBlock. ex) 192.168.2.0/24
     Type: String
 
-# PublicSubnetServer
-  AzServer:
-    Description: Select a AZ where Public Subnet will be created. ex) ap-northeast-1a
+# Public Subnet
+  AZ:
+    Description: Select a AZ where Public Subnet will be created.
     Type: AWS::EC2::AvailabilityZone::Name
-  PublicSubnetCidrBlockServer:
+  PublicSubnetCidrBlock:
     Description: Input a Public Subnet IPv4 CidrBlock.  ex) 192.168.2.0/25
-    Type: String
-
-# PublicSubnetClient
-  AzClient:
-    Description: Select a AZ where Public Subnet will be created. ex) ap-northeast-1a
-    Type: AWS::EC2::AvailabilityZone::Name
-  PublicSubnetCidrBlockClient:
-    Description: Input a Public Subnet IPv4 CidrBlock.  ex) 192.168.2.128/25
     Type: String
 
 # Internet GW
@@ -63,16 +55,10 @@ Metadata:
           - VpcCidrBlock
       -
         Label:
-          default: PublicSubnetServer 
+          default: Public Subnet
         Parameters: 
-          - AzServer
-          - PublicSubnetCidrBlockServer   
-      -
-        Label:
-          default: PublicSubnetClient
-        Parameters: 
-          - AzClient
-          - PublicSubnetCidrBlockClient       
+          - AZ
+          - PublicSubnetCidrBlock          
 
 Resources:
 # VPC
@@ -86,28 +72,17 @@ Resources:
       Tags: 
         - Key: Name
           Value: !Sub ${YYYYMMDD}-${HandsonName}-vpc
-# PublicSubnetServer
-  MySubnetServer:
+# PublicSubnet
+  MySubnet:
     Type: AWS::EC2::Subnet
     Properties: 
-      AvailabilityZone: !Ref AzServer
-      CidrBlock: !Ref PublicSubnetCidrBlockServer
+      AvailabilityZone: !Ref AZ
+      CidrBlock: !Ref PublicSubnetCidrBlock
       MapPublicIpOnLaunch: true
       VpcId: !Ref MyVPC
       Tags: 
         - Key: Name
-          Value: !Sub ${YYYYMMDD}-${HandsonName}-pub-sub-server
-# PublicSubnetClient
-  MySubnetClient:
-    Type: AWS::EC2::Subnet
-    Properties: 
-      AvailabilityZone: !Ref AzClient
-      CidrBlock: !Ref PublicSubnetCidrBlockClient
-      MapPublicIpOnLaunch: true
-      VpcId: !Ref MyVPC
-      Tags: 
-        - Key: Name
-          Value: !Sub ${YYYYMMDD}-${HandsonName}-pub-sub-client
+          Value: !Sub ${YYYYMMDD}-${HandsonName}-pub-sub
 
 # InternetGW
   MyInternetGW:
@@ -139,16 +114,11 @@ Resources:
       GatewayId: !Ref MyInternetGW
       RouteTableId: !Ref MyRouteTable
 
-  MySubnetRouteTableAssociationServer:
+  MySubnetRouteTableAssociation:
       Type: AWS::EC2::SubnetRouteTableAssociation
       Properties: 
         RouteTableId: !Ref MyRouteTable
-        SubnetId: !Ref MySubnetServer
-  MySubnetRouteTableAssociationClient:
-      Type: AWS::EC2::SubnetRouteTableAssociation
-      Properties: 
-        RouteTableId: !Ref MyRouteTable
-        SubnetId: !Ref MySubnetClient
+        SubnetId: !Ref MySubnet
 
 # SSM Parameter
   SSMVpcId:
@@ -157,15 +127,9 @@ Resources:
       Name: !Sub /${HandsonName}/VpcId
       Value: !Ref MyVPC
       Type: String
-  SSMSubnetIdServer:
+  SSMSubnetId:
     Type: AWS::SSM::Parameter
     Properties:
       Name: !Sub /${HandsonName}/SubnetId/Server
-      Value: !Ref MySubnetServer
-      Type: String
-  SSMSubnetIdClient:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: !Sub /${HandsonName}/SubnetId/Client
-      Value: !Ref MySubnetClient
+      Value: !Ref MySubnet
       Type: String

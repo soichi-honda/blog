@@ -41,7 +41,7 @@ ex) aaa@example.com
 |作成リソース|スタック名|テンプレートURL|
 |---|---|---|
 |SSMパラメータ|smtp-handson-common-YYYYMMDD|[cfn-template-common.yml](https://github.com/sugaya0204/blog/blob/Public/Tips/mail-server/build-smtp-server/templates/cfn-template-common.yml)|
-|VPC, PublicSubnet×2|smtp-handson-vpc-YYYYMMDD|[cfn-template-vpc.yml](https://github.com/sugaya0204/blog/blob/Public/Tips/mail-server/build-smtp-server/templates/cfn-template-vpc.yml)|
+|VPC, PublicSubnet|smtp-handson-vpc-YYYYMMDD|[cfn-template-vpc.yml](https://github.com/sugaya0204/blog/blob/Public/Tips/mail-server/build-smtp-server/templates/cfn-template-vpc.yml)|
 |EC2:"YYYYMMDD-smtp-handson-server"|smtp-handson-server-YYYYMMDD|[cfn-template-server.yml](https://github.com/sugaya0204/blog/blob/Public/Tips/mail-server/build-smtp-server/templates/cfn-template-server.yml)|
 
 *1. CloudFormationテンプレートの流し方は、以下を参考ください。
@@ -93,7 +93,7 @@ ex) aaa@example.com
   |---|---|
   |ルーティングポリシー|シンプルルーティング|
   |レコード名|ドメイン名 ex) example.com|
-  |値/トラフィックのルーティング先|10 "Aレコードに登録したサブドメイン"　ex) 10 mail.example.com (*3)|
+  |値/トラフィックのルーティング先|10 "Aレコードに登録したサブドメイン"  ex) 10 mail.example.com (*3)|
   |レコードタイプ|MX|
 
 *3. 値に入れた数字はメールを振り分ける際の比重を表します。
@@ -172,8 +172,13 @@ home_mailbox = Maildir/
 
 ```bash
 $ sudo diff /etc/postfix/main.cf /etc/postfix/main.cf.`date +"%Y%m%d"` //差分を確認するコマンド
-$ postconf -n
+$ postconf -n (*5)
 ```
+
+*5. "postconf -n" 
+Postfixのmain.cfで読み込まれるパラメータを確認します。
+
+参考: [http://www.postfix-jp.info/trans-2.2/jhtml/postconf.1.html](http://www.postfix-jp.info/trans-2.2/jhtml/postconf.1.html)
 
 ---
 
@@ -190,9 +195,9 @@ $ systemctl status postfix
 今回、メールユーザはUNIXユーザと1:1の関係です。
 
 ```
-$ sudo useradd muser 
+$ sudo useradd muser
+$ sudo passwd muser
 $ less /etc/passwd //確認用
-$ exit
 ```
 
 ## 動作確認
@@ -236,23 +241,28 @@ Sep 12 04:46:57 ip-192-168-2-74 postfix/qmgr[3127]: 8A129CA445F: from=<hogehoge@
 Sep 12 04:46:57 ip-192-168-2-74 postfix/smtpd[3164]: disconnect from unknown[54.249.33.61]
 Sep 12 04:46:57 ip-192-168-2-74 postfix/local[3169]: 8A129CA445F: to=<muser@example.com>, relay=local, delay=0.05, delays=0.04/0/0/0, dsn=2.0.0, status=sent (delivered to maildir)
 Sep 12 04:46:57 ip-192-168-2-74 postfix/qmgr[3127]: 8A129CA445F: removed
-Sep 12 04:50:17 ip-192-168-2-74 postfix/anvil[3166]: statistics: max connection rate 2/60s for (smtp:54.249.33.61) at Sep 12 04:46:57
-Sep 12 04:50:17 ip-192-168-2-74 postfix/anvil[3166]: statistics: max connection count 1 for (smtp:54.249.33.61) at Sep 12 04:46:34
-Sep 12 04:50:17 ip-192-168-2-74 postfix/anvil[3166]: statistics: max cache size 1 at Sep 12 04:46:34
 ```
 
-
 ## リソースの削除
+最後に今回作成したリソースをすべて削除します。
 
-今回作成したリソースを削除しましょう。
+*6. 別の記事に進む場合は、まだ消さないでください。
 
-以下、テンプレートファイルを全て削除することで完了します。
+- [【初心者向け】Postfixでメールリレーを試してみる](https://blog.serverworks.co.jp/mail-relay)
+
+### CloudFormationスタックの削除
+以下、スタックを全て削除しましょう。
 
 |削除されるリソース|スタック名|
 |---|---|
 |SSMパラメータ|smtp-handson-common-YYYYMMDD|
-|VPC, PublicSubnet×2|smtp-handson-vpc-YYYYMMDD|
+|VPC, PublicSubnet|smtp-handson-vpc-YYYYMMDD|
 |EC2:"YYYYMMDD-smtp-handson-server"|smtp-handson-server-YYYYMMDD|
+
+### ホストゾーンの削除
+コンソールにアクセスして、今回作成したRoute53のホストゾーンを削除しましょう。
+
+取得したドメインが必要なければ、Freenom側でもドメインを削除してください。
 
 ## まとめ
 長くなりましたが、smtpサーバの構築が完了しました。

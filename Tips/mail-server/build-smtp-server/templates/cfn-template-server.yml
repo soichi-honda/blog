@@ -35,9 +35,9 @@ Parameters:
   InstanceName:
     Description: Input a instance name. Do not change as much as possible.
     Type: String
-    Default: smtp-server
+    Default: server
     AllowedValues: 
-      - smtp-server
+      - server
   SubnetId:
     Description: Input a SubnetId. Do not change as much as possible.
     Type: AWS::SSM::Parameter::Value<String>
