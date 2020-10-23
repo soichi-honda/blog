@@ -44,13 +44,13 @@ Cyrus 社から出ている SASL を提供するパッケージソフト。
 
 ## 作業
 ### ポートの開放
-セキュリティグループ ***sg_YYYYMMDD-smtp-handson-smtp-server*** (*) で以下ポートを開放してください。
+セキュリティグループ ***sg_YYYYMMDD-smtp-handson-smtp-server*** (*1) で以下ポートを開放してください。
 
 |Rule|Type|Protocol|Port|Source/Destination|
 |---|---|---|---|---|
 |inbound|カスタムTCP|TCP|587|0.0.0.0/0|
 
-*. *YYYYMMDD* にはリソース作成時の日付が入ります。
+\*1. *YYYYMMDD* にはリソース作成時の日付が入ります。
 
 ### SASLの導入
 #### 必要パッケージのインストール
@@ -190,7 +190,7 @@ $ sysmtctl status saslauthd
 
 *** YYYYMMDD-smtp-handson-client *** にSSHアクセスしてください。*4
 
-*4. PrivateSubnetにあるため、 ***YYYYMMDD-smtp-handson-server***　を踏み台にしてください。
+\*4. PrivateSubnetにあるため、 ***YYYYMMDD-smtp-handson-server***　を踏み台にしてください。
 
 ---
 
