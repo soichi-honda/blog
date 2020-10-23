@@ -185,6 +185,11 @@ Gmailだと以下からメール経路を確認できるので、やってみて
 
 以下、CloudFormationスタックを全て削除することで完了します。
 
+*5. 別の記事に進む場合は、まだ消さないでください。
+
+- [【初心者向け】SMTP認証を実装して、メールリレーをセキュアにする](https://blog.serverworks.co.jp/set-smtp-auth)
+
+
 |削除されるリソース|スタック名|
 |---|---|
 |PrivateSubnet|smtp-handson-pri-sub-YYYYMMDD|
