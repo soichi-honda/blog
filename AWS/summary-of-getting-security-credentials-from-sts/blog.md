@@ -68,7 +68,7 @@ STSで一時的なセキュリティ認証情報セットを取得する場合�
 
 以下の図のような関係性です。
 
-[f:id:swx-sugaya:20200818114336p:plain](001.PNG)
+[f:id:swx-sugaya:20200818114336p:plain]
 
 参考: [一時的なセキュリティ認証情報のリクエスト](https://docs.aws.amazon.com/ja_jp/IAM/latest/UserGuide/id_credentials_temp_request.html)
 
@@ -81,14 +81,14 @@ STSで一時的なセキュリティ認証情報セットを取得する場合�
 ### 背景
 アカウント内に以下リソースがあることを前提に解説します。
 
-[f:id:swx-sugaya:20200818114307p:plain](002.PNG)
+[f:id:swx-sugaya:20200818114307p:plain]
 
 ### GetSessionToken
 〇概要
 
 IAM Userの長期的なセキュリティ認証情報から、IAM Userの一時的なセキュリティ認証情報を発行するAPIリクエストです。
 
-[f:id:swx-sugaya:20200818114315p:plain](003.PNG)
+[f:id:swx-sugaya:20200818114315p:plain]
 
 〇流れ
 
@@ -107,7 +107,7 @@ IAM Userの長期的なセキュリティ認証情報から、IAM Userの一時�
 
 IAM Userの長期的なセキュリティ認証情報から、IAM Roleの一時的なセキュリティ認証情報を発行するAPIリクエストです。
 
-[f:id:swx-sugaya:20200818114319p:plain](004.PNG)
+[f:id:swx-sugaya:20200818114319p:plain]
 
 〇流れ
 
@@ -129,7 +129,7 @@ IAM Userの長期的なセキュリティ認証情報から、IAM Roleの一時�
 
 カスタムIDプロバイダーFederated Userの認証情報から、IAM Userの一時的なセキュリティ認証情報を発行するAPIリクエストです。
 
-[f:id:swx-sugaya:20200818114322p:plain](005.PNG)
+[f:id:swx-sugaya:20201026000003p:plain]
 
 〇流れ
 
@@ -164,7 +164,7 @@ Amazon Cognito をIdpに使う場合もこのAPIの利用が推奨されます�
 
 *4) Facebook、Google,など。
 
-[f:id:swx-sugaya:20200818114322p:plain](006.PNG)
+[f:id:swx-sugaya:20201026000008p:plain]
 
 〇流れ
 
@@ -187,7 +187,7 @@ Amazon Cognito をIdpに使う場合もこのAPIの利用が推奨されます�
 
 SAML2.0ベースのIDプロバイダーを経由したFederated Userの認証情報から、IAM Userの一時的なセキュリティ認証情報を発行するAPIリクエストです。
 
-[f:id:swx-sugaya:20200818114331p:plain](007.PNG)
+[f:id:swx-sugaya:20201026000013p:plain]
 
 〇流れ
 
