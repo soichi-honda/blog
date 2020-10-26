@@ -1,9 +1,12 @@
 ## はじめに
 本記事では、Postfixを使ったメールリレーの実装にチャレンジします。  
 
-以下記事の実施を前提としているので、先にこちらを読んでいただけると幸いです。
+本記事は第3回目の記事になるのでご注意ください。
 
-[【初心者向け】【Route53+EC2】PostfixでシンプルなSMTPサーバを構築してみる](https://blog.serverworks.co.jp/build-smtp-server)
+- [【第1回】【EC2】PostfixでシンプルなSMTPサーバを構築してみる](https://blog.serverworks.co.jp/build-smtp-server)
+- [【第2回】【EC2】Dovecotを使って、POP3サーバを構築してみる](https://blog.serverworks.co.jp/build-pop3-server)　
+- [【第3回】Postfixでメールリレーを試してみる](https://blog.serverworks.co.jp/mail-relay) ***← イマココ***
+- [【第4回】SMTP認証を実装して、メールリレーをセキュアにする](https://blog.serverworks.co.jp/set-smtp-auth)
 
 記事目安...15分
 
@@ -181,19 +184,9 @@ Gmailだと以下からメール経路を確認できるので、やってみて
 
 ## リソースの削除
 
-必要なければ、今回作成したリソースを削除しましょう。
+ほかの記事に進まない場合は、以下を参考に今まで作ったリソースを削除ください。
 
-以下、CloudFormationスタックを全て削除することで完了します。
-
-*5. 別の記事に進む場合は、まだ消さないでください。
-
-- [【初心者向け】SMTP認証を実装して、メールリレーをセキュアにする](https://blog.serverworks.co.jp/set-smtp-auth)
-
-
-|削除されるリソース|スタック名|
-|---|---|
-|PrivateSubnet|smtp-handson-pri-sub-YYYYMMDD|
-|EC2:"YYYYMMDD-smtp-handson-client"|smtp-handson-client-YYYYMMDD|
+[削除するリソースついて](https://github.com/sugaya0204/blog/blob/Public/Tips/mail-server/cfn-delete.md#%E7%AC%AC3%E5%9B%9Epostfix%E3%81%A7%E3%83%A1%E3%83%BC%E3%83%AB%E3%83%AA%E3%83%AC%E3%83%BC%E3%82%92%E8%A9%A6%E3%81%97%E3%81%A6%E3%81%BF%E3%82%8B)
 
 ## まとめ
 

@@ -3,9 +3,12 @@
 前回メールリレーの実装を行いましたが、リレーサーバが増えるごとに ***mynetworks*** パラメータを変更する運用はあまり柔軟ではありません。  
 そこでSMTPリレーに認証機能を付けて、より柔軟かつセキュアに運用できるようにしていきましょう。
 
-以下記事をやっていることが前提となるので、こちらをやっていると理解が早くなると思います。
+本記事は第２回目の記事になるのでご注意ください。
 
-[【初心者向け】Postfixでメールリレーを試してみる](https://blog.serverworks.co.jp/mail-relay)
+- [【第1回】【EC2】PostfixでシンプルなSMTPサーバを構築してみる](https://blog.serverworks.co.jp/build-smtp-server)
+- [【第2回】【EC2】Dovecotを使って、POP3サーバを構築してみる](https://blog.serverworks.co.jp/build-pop3-server)
+- [【第3回】Postfixでメールリレーを試してみる](https://blog.serverworks.co.jp/mail-relay)
+- [【第4回】SMTP認証を実装して、メールリレーをセキュアにする](https://blog.serverworks.co.jp/set-smtp-auth) ***← イマココ***
 
 記事目安...15分
 
@@ -242,18 +245,13 @@ Oct 21 02:21:15 ip-192-168-2-44 postfix/qmgr[2924]: 66857C01110: removed
 
 ## リソースの削除
 
-必要なければ、今回作成したリソースを削除しましょう。
+ほかの記事に進まない場合は、以下を参考に今まで作ったリソースを削除ください。
 
-以下、CloudFormationスタックを全て削除することで完了します。
-
-|削除されるリソース|スタック名|
-|---|---|
-|PrivateSubnet|smtp-handson-pri-sub-YYYYMMDD|
-|EC2:"YYYYMMDD-smtp-handson-client"|smtp-handson-client-YYYYMMDD|
+[削除するリソースについて](https://github.com/sugaya0204/blog/blob/Public/Tips/mail-server/cfn-delete.md#%E7%AC%AC4%E5%9B%9Esmtp%E8%AA%8D%E8%A8%BC%E3%82%92%E5%AE%9F%E8%A3%85%E3%81%97%E3%81%A6%E3%83%A1%E3%83%BC%E3%83%AB%E3%83%AA%E3%83%AC%E3%83%BC%E3%82%92%E3%82%BB%E3%82%AD%E3%83%A5%E3%82%A2%E3%81%AB%E3%81%99%E3%82%8B)
 
 ## まとめ
 
 ということで、SMTP認証を利用したメールリレーをセットアップしてみました。  
-これで、第三者による不正なメールリレーが行われる危険性はぐんと下がったと思います。
+これで、第三者による不正なメールリレーが行われる危険性はぐんと下がりました。
 
 ご覧いただきありがとうございました。
