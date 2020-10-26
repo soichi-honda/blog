@@ -3,7 +3,7 @@ SaaSサービスなどがある今、メールサーバを1から構築する人
 
 メールサーバはとにかくやることが色々あって混乱するので、複数記事に分けてブログを書いていこうと思います。
 
-- [【第1回】【EC2】PostfixでシンプルなSMTPサーバを構築してみる(https://blog.serverworks.co.jp/build-smtp-server) ***← イマココ]***
+- [【第1回】【EC2】PostfixでシンプルなSMTPサーバを構築してみる](https://blog.serverworks.co.jp/build-smtp-server) ***← イマココ***
 - [【第2回】【EC2】Dovecotを使って、POP3サーバを構築してみる](https://blog.serverworks.co.jp/build-pop3-server)
 - [【第3回】Postfixでメールリレーを試してみる](https://blog.serverworks.co.jp/mail-relay)
 - [【第4回】SMTP認証を実装して、メールリレーをセキュアにする](https://blog.serverworks.co.jp/set-smtp-auth)
@@ -15,9 +15,11 @@ SaaSサービスなどがある今、メールサーバを1から構築する人
 [:contents]
 
 ## ゴール
-今回は、以下構成でEC2上にSMTPサーバを構築します。
+- 以下構成でEC2上にSMTPサーバを構築します。
 
 [f:id:swx-sugaya:20200912151915p:plain]
+
+- 構築したSMTPサーバがメールを受信できることを確認する
 
 ## 用語
 #### メールアドレス
@@ -251,23 +253,9 @@ Sep 12 04:46:57 ip-192-168-2-74 postfix/qmgr[3127]: 8A129CA445F: removed
 ```
 
 ## リソースの削除
-最後に今回作成したリソースをすべて削除します。
+ほかの記事に進まない場合は、以下のページにアクセスして対象リソースを削除してください。
 
-*6. 別の記事に進む場合は、まだ消さないでください。
-
-### CloudFormationスタックの削除
-以下、スタックを全て削除しましょう。
-
-|削除されるリソース|スタック名|
-|---|---|
-|SSMパラメータ|smtp-handson-common-YYYYMMDD|
-|VPC, PublicSubnet|smtp-handson-vpc-YYYYMMDD|
-|EC2:"YYYYMMDD-smtp-handson-server"|smtp-handson-server-YYYYMMDD|
-
-### ホストゾーンの削除
-コンソールにアクセスして、今回作成したRoute53のホストゾーンを削除しましょう。
-
-取得したドメインが必要なければ、Freenom側でもドメインを削除してください。
+[削除するリソース一覧について](https://github.com/sugaya0204/blog/blob/Public/Tips/mail-server/cfn-delete.md)
 
 ## まとめ
 長くなりましたが、SMTPサーバの構築が完了しました。

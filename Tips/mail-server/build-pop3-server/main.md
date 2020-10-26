@@ -2,9 +2,12 @@
 
 今回はPOP3サーバを構築して、受信したメールを取得してみます。
 
-以下記事をやっていることが前提となるので、まだの人はこちらからやってください！
+本記事は第２回目の記事になるのでご注意ください。
 
-[【初心者向け】【Route53+EC2】PostfixでシンプルなSMTPサーバを構築してみる](https://blog.serverworks.co.jp/build-smtp-server)
+- [【第1回】【EC2】PostfixでシンプルなSMTPサーバを構築してみる](https://blog.serverworks.co.jp/build-smtp-server)
+- [【第2回】【EC2】Dovecotを使って、POP3サーバを構築してみる](https://blog.serverworks.co.jp/build-pop3-server)　***← イマココ***
+- [【第3回】Postfixでメールリレーを試してみる](https://blog.serverworks.co.jp/mail-relay)
+- [【第4回】SMTP認証を実装して、メールリレーをセキュアにする](https://blog.serverworks.co.jp/set-smtp-auth)
 
 記事目安...10分
 
@@ -14,7 +17,7 @@
 
 以下ができることがゴールです。
 
-- DovecotでPOP3サーバを構築する。
+- [前回記事](https://blog.serverworks.co.jp/build-smtp-server)で作成したサーバに、Dovecotをインストールして、POP3サーバを構築する。
 - [前回記事](https://blog.serverworks.co.jp/build-smtp-server)で受信したメールをPOP3で取得する
 
 ## 用語
@@ -32,7 +35,7 @@ Unix系動作する、POP3での通信を行う際に必要なサーバソフト
 
 まずは、POP3でのインバウンド通信を許可します。
 
-前回作成した セキュリティグループ:"sg_YYYYMMDD-smtp-handson-server" に以下インバウンド通信を許可してください。
+[前回記事](https://blog.serverworks.co.jp/build-smtp-server)で作成した、 セキュリティグループ:*****sg_YYYYMMDD-smtp-handson-server***** に以下インバウンド通信を許可してください。
 
 |Rule|Type|Port|Source|Detail|
 |---|---|---|---|---|
@@ -40,7 +43,7 @@ Unix系動作する、POP3での通信を行う際に必要なサーバソフト
 
 ## Dovecotの導入
 
-[前回記事](https://blog.serverworks.co.jp/build-smtp-server)で作成した、EC2:"YYYYMMDD-smtp-handson-server" にログインしてください。
+[前回記事](https://blog.serverworks.co.jp/build-smtp-server)で作成した、EC2:*****YYYYMMDD-smtp-handson-server***** にログインしてください。
 
 ---
 
@@ -54,7 +57,7 @@ $ sudo yum install -y dovecot
 
 続いて、設定を編集します。
 
-まずは、主設定ファイルの "dovcot.conf" を編集します。
+まずは、主設定ファイルの *****dovcot.conf***** を編集します。
 
 ```bash
 $ sudo cp -a /etc/dovecot/dovecot.conf /etc/dovecot/dovecot.conf.`date +"%Y%m%d"`
@@ -73,7 +76,7 @@ $ sudo diff /etc/dovecot/dovecot.conf /etc/dovecot/dovecot.conf.`date +"%Y%m%d"`
 
 ---
 
-続いて、"10-mail.conf"を編集します。  
+続いて、*****10-mail.conf*****を編集します。  
 メール取得時の主設定を記述します。
 
 ```bash
@@ -91,7 +94,7 @@ $ sudo diff /etc/dovecot/conf.d/10-mail.conf /etc/dovecot/conf.d/10-mail.conf.`d
 
 ---
 
-今度は、"10-auth.conf"を編集します。  
+今度は、*****10-auth.conf*****を編集します。  
 このファイルはDovecotの認証周りを設定します。
 
 ```bash
@@ -108,7 +111,7 @@ $ sudo diff /etc/dovecot/conf.d/10-auth.conf /etc/dovecot/conf.d/10-auth.conf.`d
 ```
 
 ---
-さらに、"10-ssl.conf"を編集します。  
+さらに、*****10-ssl.conf*****を編集します。  
 このファイルはDovecotのSSL接続を設定します。
 
 ```bash
@@ -127,7 +130,7 @@ $ sudo diff /etc/dovecot/conf.d/10-ssl.conf /etc/dovecot/conf.d/10-ssl.conf.`dat
 *1. 今回は検証のため、SSL接続しなくても大丈夫な設定にしています。
 
 ---
-最後に、"10-master.conf" を編集します。  
+最後に、*****10-master.conf***** を編集します。  
 ここでは、各ポートでの待ち受け設定を行います。
 
 ```
@@ -148,14 +151,14 @@ $ sudo diff /etc/dovecot/conf.d/10-master.conf /etc/dovecot/conf.d/10-master.con
 
 ---
 
-ここまで出来たら "doveconf"(*2) コマンドで設定を確認しましょう。
+ここまで出来たら ***doveconf***(*2) コマンドで設定を確認しましょう。
 
 ```bash
 $ doveconf -a
 $ doveconf -n
 ```
 
-*2. "doveconf"コマンド
+*2. ***doveconf***コマンド
 
 |Option|Detail|
 |---|---|
@@ -172,12 +175,12 @@ $ doveconf -n
 $ sudo systemctl start dovecot
 $ systemctl status dovecot
 $ ss -nlt4
-LISTEN   0         100                 0.0.0.0:110              0.0.0.0: (*3)
+LISTEN   0         100                 0.0.0.0:110              0.0.0.0: (*****3)
 ```
 
 ## 動作確認
 
-[前回記事](https://blog.serverworks.co.jp/build-smtp-server)で、"YYYYMMDD-smtp-handson-server" にメールを送信しているので、そちらを確認しましょう。
+[前回記事](https://blog.serverworks.co.jp/build-smtp-server)で、*****YYYYMMDD-smtp-handson-server***** にメールを送信しているので、そちらを確認しましょう。
 
 ---
 
@@ -187,7 +190,7 @@ CloudFormationテンプレートを用意したので、こちらでPOP3クラ�
 
 |リソース|スタック名|URL|
 |---|---|
-|EC2:"YYYYMMDD-smtp-handson-pop3-client"|smtp-handson-pop3-client-YYYYMMDD|[cfn-template-ec2](https://github.com/sugaya0204/blog/blob/Public/Tips/mail-server/build-pop3-server/templates/cfn-template-ec2.yml)|
+|EC2:*****YYYYMMDD-smtp-handson-pop3-client*****|smtp-handson-pop3-client-YYYYMMDD|[cfn-template-ec2](https://github.com/sugaya0204/blog/blob/Public/Tips/mail-server/build-pop3-server/templates/cfn-template-ec2.yml)|
 
 *3. 今回立てるEC2の詳細は以下です。
 
@@ -201,7 +204,7 @@ CloudFormationテンプレートを用意したので、こちらでPOP3クラ�
 
 ---
 
-"YYYYMMDD-smtp-handson-pop3-client" にSSH接続します。
+*****YYYYMMDD-smtp-handson-pop3-client***** にSSH接続します。
 
 ---
 
@@ -214,10 +217,10 @@ $ which telnet
 
 ---
 
-では、telnetコマンドで "YYYYMMDD-smtp-handson-server" にPOP3接続します。
+では、telnetコマンドで *****YYYYMMDD-smtp-handson-server***** にPOP3接続します。
 
 ```bash
-$ telnet <"YYYYMMDD-smtp-handson-server" のドメイン名> 110
+$ telnet <*****YYYYMMDD-smtp-handson-server***** のドメイン名> 110
 user muser //ユーザ認証を開始
 pass <muserのパスワード>
 list //取得したメールの一覧を確認する
@@ -258,7 +261,13 @@ Connection closed by foreign host.
 
 |削除されるリソース|スタック名|
 |---|---|
-|EC2:"YYYYMMDD-smtp-handson-pop3-client"|smtp-handson-pop3-client-YYYYMMDD|
+|EC2:*****YYYYMMDD-smtp-handson-pop3-client*****|smtp-handson-pop3-client-YYYYMMDD|
+
+---
+
+ほかの記事に進まない場合は、以下を参考に今まで作ったリソースを削除ください。
+
+[削除するリソース一覧について](https://github.com/sugaya0204/blog/blob/Public/Tips/mail-server/cfn-delete.md#%E7%AC%AC2%E5%9B%9Eec2dovecot%E3%82%92%E4%BD%BF%E3%81%A3%E3%81%A6pop3%E3%82%B5%E3%83%BC%E3%83%90%E3%82%92%E6%A7%8B%E7%AF%89%E3%81%97%E3%81%A6%E3%81%BF%E3%82%8B)
 
 ## まとめ
 
@@ -267,6 +276,6 @@ Connection closed by foreign host.
 POP3は受信するためのプロトコルと思いがちですが、実際は受信したメールを取得する際のプロトコルです。  
 実際に触っていただいたことで理解していただけたのではないでしょうか? 
 
-ただセキュリティ面はまだ脆弱なため、セキュリティを強化する方法も次回のブログで書きたいと思います。
+ただセキュリティ面はまだ脆弱なため、セキュリティを強化する方法もどこかで書きたいと思います。
 
 ご覧いただきありがとうございました。
