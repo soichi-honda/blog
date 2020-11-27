@@ -1,0 +1,3 @@
+Name,Env,Service
+blog-stg-nlb-1,stg,test
+blog-stg-alb-1,stg,test
