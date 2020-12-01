@@ -1,0 +1,33 @@
+{
+    "TagDescriptions": [
+        {
+            "ResourceArn": "arn:aws:elasticloadbalancing:ap-northeast-1:996294872387:loadbala                                                                                                ncer/app/dcdmarvel-live-lb-01/8d0ba758adb6354f",
+            "Tags": [
+                {
+                    "Key": "Service",
+                    "Value": "MarvelApp"
+                },
+                {
+                    "Key": "environment",
+                    "Value": "Live"
+                },
+                {
+                    "Key": "Monitor",
+                    "Value": "DataDog"
+                },
+                {
+                    "Key": "product_name",
+                    "Value": "MarvelApp"
+                },
+                {
+                    "Key": "In Charge",
+                    "Value": "Toshimitsu Ishii"
+                },
+                {
+                    "Key": "Name",
+                    "Value": "dcdmarvel-live-lb-01"
+                }
+            ]
+        }
+    ]
+}
