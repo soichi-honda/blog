@@ -1,0 +1,89 @@
+# Yml file to build the following AWS resources
+# |Resource|Number|
+# |---|---|
+# |AWS MMAD|1|
+# |DHCPOptionSet|1|
+
+Parameters:
+  domainName:
+    Description: Input a domain name that you want AD to manage.
+    Type: String
+    Default: example.com
+  adminPassword:
+    Description: Input a password for Admin user. The password must comply with "Password Policy". Please read https://docs.aws.amazon.com/ja_jp/directoryservice/latest/admin-guide/ms_ad_getting_started_create_directory.html.
+    Type: String
+    Default: P@ssw0rd
+  vpcId:
+    Description: Select your VPC.
+    Type: AWS::EC2::VPC::Id
+  subnetIds:
+    Description: Select your subnet. AWS Managed Microsoft AD need at least 2 subnet ID.
+    Type: List<AWS::EC2::Subnet::Id> 
+  dhcpName: 
+    Description: Input a DHCP name you want. This parameter will be DHCPOptionSet Name Tag.
+    Type: String
+    Default: AD-test
+
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      -
+        Label:
+          default: NetWork Parameter
+        Parameters:
+          - vpcId
+          - subnetIds
+      -
+        Label:
+          default: AD Parameter
+        Parameters:
+          - domainName
+          - adminPassword
+      -
+        Label:
+          default: DHCPOptionSet Parameter
+        Parameters:
+          - dhcpName
+
+Resources:
+  MyMicrosoftAd:
+    Type: AWS::DirectoryService::MicrosoftAD
+    Properties: 
+      CreateAlias: False
+      Edition: Standard
+      EnableSso: False
+      Name: !Ref domainName
+      Password: !Ref adminPassword
+      # ShortName: String
+      VpcSettings: 
+        SubnetIds: !Ref subnetIds
+        VpcId: !Ref vpcId
+
+  MyDHCPOptionSet:
+    Type: AWS::EC2::DHCPOptions
+    Properties: 
+      DomainName: !Ref domainName
+      DomainNameServers: !GetAtt MyMicrosoftAd.DnsIpAddresses
+      Tags: 
+        - Key: Name
+          Value: !Ref dhcpName
+
+  MyDHCPOptionAssociation:
+    Type: AWS::EC2::VPCDHCPOptionsAssociation
+    Properties: 
+      DhcpOptionsId: !Ref MyDHCPOptionSet
+      VpcId: !Ref vpcId
+  
+Outputs:
+  MyMicrosoftAdId:
+    Description: Microsoft AD ID
+    Value: !Ref MyMicrosoftAd
+  MyMicrosoftAdDnsIpAddress:
+    Description: IP address of Microsoft AD DNS server
+    Value: !Join
+      - ','
+      - !GetAtt MyMicrosoftAd.DnsIpAddresses
+  MyDHCPOptionSetId:
+    Description: DHCPOptionSet ID
+    Value: !Ref MyDHCPOptionSet
