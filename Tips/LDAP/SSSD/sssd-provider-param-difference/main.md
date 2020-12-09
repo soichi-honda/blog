@@ -13,7 +13,8 @@ SSSD で LDAP ユーザの SSH アクセス制御をしたいときに、 *id_pr
 ## 前提条件
 
 - SSSD の接続先は OpenLDAP Server とします。
-- 確認に使うユーザ名は *ldap-user* とします。
+- 検証機には、 *AmazonLinux2* を使用します。
+- 確認に使うユーザ名は *ec2-user*, *ldap-user* とします。また、 *ldap-user* は事前にパスワード入力による *sudo* を使えるように設定します。
 - *sssd.conf* の中身は以下とします。
 ```
 [sssd]
@@ -67,13 +68,13 @@ ec2-user$ getent passwd ldap-user
 ```bash
 ec2-user$ su ldap-user
 ```
-- SUDO SU(LDAPユーザ)  
+- SUDO SU(ec2-user → ldap-user)  
 *ec2-user* から *ldap-user* に **パスワード入力無し** で、ユーザ切り替えを行います。
 ```bash
 ec2-user$ sudo su ldap-user
 ```
-- SUDO SU(ROOTユーザ)  
-*ldap-user* から *root* に、ユーザ切り替えを行います。
+- SUDO SU(ldap-user → root)  
+*ldap-user* から *root* に、ユーザ切り替えを行い、 *ldap-user* が *sudo* 権限を使用できるか調査します。 
 ```bash
 ldap-user$ sudo su
 ```
@@ -93,7 +94,7 @@ ec2-user@ssh-client$ ssh ldap-user@ldap-client
 
 ### *id_provider* が未定義 の場合
 
-|auth_provider||access_provider|ID|GETENT PASSWD|SU|SUDO SU(LDAPユーザ)|SUDO SU(ROOTユーザ)|★SSH★|
+|auth_provider||access_provider|ID|GETENT PASSWD|SU(ec2-user → ldap-user)|SUDO SU(ec2-user → ldap-user)|SUDO SU(ldap-user → root)|★SSH★|
 |---|---|---|---|---|---|---|---|---|
 |none|かつ|deny|×|×|×|×|-|×|
 |none|かつ|permit|×|×|×|×|-|×|
@@ -104,7 +105,7 @@ ec2-user@ssh-client$ ssh ldap-user@ldap-client
 
 ### *id_provider=ldap* の場合
 
-|auth_provider||access_provider|ID|GETENT PASSWD|SU|SUDO SU(LDAPユーザ)|SUDO SU(ROOTユーザ)|★SSH★|
+|auth_provider||access_provider|ID|GETENT PASSWD|SU(ec2-user → ldap-user)|SUDO SU(ec2-user → ldap-user)|SUDO SU(ldap-user → root)|★SSH★|
 |---|---|---|---|---|---|---|---|---|
 |none|かつ|deny|〇|〇|×|〇|×|×|
 |none|かつ|permit|〇|〇|×|〇|×|×|
@@ -115,10 +116,13 @@ ec2-user@ssh-client$ ssh ldap-user@ldap-client
 ## 考察
 
 - *id_provider* が定義されていない場合、 **LDAP ユーザは解決できなくなる** 。
+
 - *auth_provider* が *none* の場合、LDAP ユーザによる認証ができないため、 **結果として *access_provider* の設定値が意味なくなる** 。
-- *auth_provider=noneかつ、access_provider＝ldap* と、*auth_provider=ldapかつ、access_provider＝deny* は SSH 接続時のエラー文に違いがあったことから、 **認証する前の段階で拒否されるか、認証段階で拒否されるか** の違いがあると考察できる。
-    - *auth_provider=noneかつ、access_provider＝ldap* → Permission denied, please try again.
+
+- *auth_provider=noneかつ、access_provider＝permit* と、*auth_provider=ldapかつ、access_provider＝deny* は SSH 接続時のエラー文に違いがあったことから、 **認証前に弾かれるか、認証後に弾かれるかの違いがありそう**。
+    - *auth_provider=noneかつ、access_provider＝permit* → Permission denied, please try again.
     - *auth_provider=ldapかつ、access_provider＝deny* → Authentication failed.
+
 - *id_provider=ldapかつ、auth_provider=ldapかつ、access_provider=permit* の場合、 **全てのコマンドが実行できた** 。
 
 ## 結論
