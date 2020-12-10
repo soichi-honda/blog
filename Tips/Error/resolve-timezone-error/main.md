@@ -8,16 +8,34 @@ Failed to set time zone: Failed to update /etc/localtime
 
 ## 原因
 
-[こちら](https://github.com/cockpit-project/bots/issues/78) を見たところ、どうやらSELinux がタイムゾーンの変更を禁止するらしい
+〇2020/12/10追記(ビューア様にコメントをいただきました)---
+
+このエラーは、**セキュリティアップデートをおこなっていない RHEL8.2** でのみ起こる現象です。
+
+[1779098 – SELinux prevents timedatex from searching the /etc/selinux/targeted/contexts/files directory](https://bugzilla.redhat.com/show_bug.cgi?id=1779098)
+
+\---
+
+[こちら](https://github.com/cockpit-project/bots/issues/78) もあわせて見たところ、SELinux がタイムゾーンの変更を禁止しているらしい。
 
 実際に環境の SELinux の設定を確認してみると、たしかに SELinux が有効になってました。
 
 ```bash
-$ getenforcing
+$ getenforce
 Enforcing
 ```
 
 ## 解決方法
+
+〇2020/12/10追記(ビューア様にコメントをいただきました)---
+
+RHEL8.2 のセキュリティアップデートをしてください!
+
+アップデート後にタイムゾーンを変更すると、SELinux が有効でも問題なくコマンドが通るそうです。
+
+\---
+
+※これ以降の方法は **非推奨** となります。セキュリティアップデートが何らかの理由でできない、もしくはおこなっても解決しない場合に試してください。
 
 SELinux を *Permissive* モード(*1)にしましょう。
 
@@ -50,6 +68,7 @@ SELINUX=enforcing
 → SELINUX=permissive
 ---
 $ sudo diff /etc/selinux/config /etc/selinux/config.org
+$ getenforce //確認
 ```
 
 ---
@@ -64,3 +83,7 @@ $ sudo timedatectl status
 ```
 
 いけました！
+
+
+## 変更履歴
+- 2020/12/10 内容追記&修正 ビューア様にいただいたコメントをもとに内容を変更しています。
