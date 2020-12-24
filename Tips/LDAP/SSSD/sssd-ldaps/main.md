@@ -14,7 +14,7 @@ sssd で ldaps 通信を行いたいときに、最低限注目すべきパラ�
 |---|---|
 |ldap_id_use_start_tls|SSL/TLS 通信を行うか決定します|
 |ldap_tls_cacert|SSL/TLS 通信開始前の検証の際に、使用するルートCA証明書ファイルを指定します(*1)|
-|ldap_tls_cacertdir|検証で使用するルートCA証明書ファイルをディレクトリレベルで指定したいときは、_ldap\_tls\_cacert_ の代わりにこちらを使用します。(*2)|
+|ldap_tls_cacertdir|検証で使用するルートCA証明書ファイルが格納されたディレクトリを指定したいときは、_ldap\_tls\_cacert_ の代わりにこちらを使用します。(*2)|
 |ldap_tls_reqcert|証明書の検証レベルを決定します|
 
 参考: [sssd\-ldap\(5\): config file for SSSD \- Linux man page](https://linux.die.net/man/5/sssd-ldap)
@@ -35,7 +35,7 @@ sssd で ldaps 通信を行いたいときに、最低限注目すべきパラ�
 |---|---|
 |ldapサーバのホスト名|hogehoge.com|
 |ldapドメイン|dc=example, dc=com|
-|ルートCA証明書|hogehoge.crt|
+|ルートCA証明書|/etc/openldap/certs/hogehoge.crt|
 
 #### パターン1: 証明書の検証を行うパターン
 
