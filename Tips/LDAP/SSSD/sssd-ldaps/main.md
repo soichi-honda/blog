@@ -37,7 +37,7 @@ sssd で ldaps 通信を行いたいときに、最低限注目すべきパラ�
 |ldapドメイン|dc=example, dc=com|
 |ルートCA証明書|/etc/openldap/certs/hogehoge.crt|
 
-#### パターン1: 証明書の検証を行うパターン
+#### パターン1: STARTTLS 通信かつ、証明書の検証を行うパターン
 
 ```
 [domain/default]
@@ -55,7 +55,24 @@ ldap_tls_reqcert = demand
 
 ```
 
-#### 【非推奨】パターン2: 証明書の検証を行わないパターン
+#### パターン2: TLS 通信かつ、証明書の検証を行うパターン
+```
+[domain/default]
+
+id_provier = ldap
+auth_provieder = ldap
+access_provieder = permit
+
+ldap_uri = ldaps://hogehoge.com
+ldap_search_base = dc=example, dc=com
+
+ldap_id_use_start_tls = true
+ldap_tls_cacert = /etc/openldap/certs/hogehoge.crt
+ldap_tls_reqcert = demand
+
+```
+
+#### 【非推奨】パターン3: TLS 通信かつ、証明書の検証を行わないパターン
 
 ```
 [domain/default]
@@ -69,10 +86,8 @@ ldap_search_base = dc=example, dc=com
 
 ldap_id_use_start_tls = true
 ldap_tls_cacert = /etc/openldap/certs/hogehoge.crt
-ldap_tls_reqcert = nerver
+ldap_tls_reqcert = never
 ```
-
-両パターンの違いは、 *ldap_tls_reqcert* の値だけです。
 
 *3) id_provider, auth_provider, access_provider については [こちらのブログ](https://blog.serverworks.co.jp/sssd-ldap-access-filter)をご参考ください。
 

@@ -21,7 +21,7 @@ LDAPサーバへの接続が前提です。
 |ユーザパスワード検索ベースDNの定義|base shadow, filter shadow|-|
 |グループ検索ベースDNの定義|base group, filter group|ldap_group_search_base|
 |バインドDNのユーザ名定義|binddn|ldap_default_bind_dn|
-|バインドDNのパスワード定義|bindpw|ldap_default_authtok|
+|バインドDNのパスワード定義|bindpw|ldap_default_authtok_type, ldap_default_authtok|
 
 *1. ユーザ検索ベースDN の詳しい設定方法は[こちらのブログ](https://blog.serverworks.co.jp/sssd-ldap_search_base)をご参考ください。
 
@@ -113,7 +113,8 @@ ldap_access_order = filter
 ldap_access_filter = (&(objectClass=posixAccount)(|(host=hogehoge-server)(host=\*))
 
 ldap_default_bind_dn=cn=hogehoge, dc=People, dc=example, dc=com
-ldap_default_authtok <ハッシュ化されたパスワード>
+ldap_default_authtok_type = password
+ldap_default_authtok = fugafuga 
 
 cache_credentials = false
 
