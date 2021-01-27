@@ -1,0 +1,25 @@
+# 1 - Add hostObject auxiliary class
+
+dn: CN=hostObject, CN=Schema, CN=Configuration, DC=example, DC=com
+changetype: add
+objectClass: top
+objectClass: classSchema
+cn: hostObject
+governsID: 1.3.6.1.4.1.5322.17.1.2
+mayContain: host
+systemMayContain: host
+rDNAttID: cn
+adminDisplayName: hostObject
+adminDescription: Auxiliary object class for adding host attribute
+objectClassCategory: 3
+lDAPDisplayName: hostObject
+name: hostObject
+systemOnly: FALSE
+
+# 2 – Update the schema cache
+
+dn:
+changetype: modify
+add: schemaUpdateNow
+schemaUpdateNow: 1
+-
