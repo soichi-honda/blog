@@ -7,13 +7,13 @@
 Parameters:
 # EC2
   AmiId:
-    Description: Input an ami-id. Default is the latest AmazonLinux2 AMI.
+    Description: Input an ami-id. Default is the latest WindowsServer 2019 AMI.
     Type: AWS::SSM::Parameter::Value<String>
-    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
+    Default: /aws/service/ami-windows-latest/Windows_Server-2019-English-Full-Base
   InstanceType:
     Description: Input an Instance type.
     Type: String
-    Default: t3.micro
+    Default: t3.small
   KeyPair:
     Description: Select your key pair.
     Type: "AWS::EC2::KeyPair::KeyName"
@@ -35,8 +35,8 @@ Parameters:
   VpcId:
     Description: Select your VpcId.
     Type: AWS::EC2::VPC::Id
-  SshInboundIp:
-    Description: Input an IP address you want to access with SSH. e.g. 0.0.0.0/0
+  RdpInboundIp:
+    Description: Input an IP address you want to access with RDP. e.g. 0.0.0.0/0
     Type: String
     Default: "0.0.0.0/0"
 
@@ -59,7 +59,7 @@ Metadata:
           default: SG
         Parameters: 
           - VpcId
-          - SshInboundIp
+          - RdpInboundIp
 
 Resources:
 # EC2
@@ -75,9 +75,9 @@ Resources:
       InstanceType: !Ref InstanceType
       KeyName: !Ref KeyPair
       BlockDeviceMappings: 
-        - DeviceName: /dev/xvda
+        - DeviceName: /dev/sda1
           Ebs: 
-            VolumeSize: 8
+            VolumeSize: 30
             VolumeType: gp3
             Iops: 3000
             DeleteOnTermination: true
@@ -101,14 +101,13 @@ Resources:
       GroupDescription: !Sub Security Group attached to ${InstanceName}
       GroupName: !Sub sg_${InstanceName}
       SecurityGroupIngress:
-        -   CidrIp: !Ref SshInboundIp
-            Description: SSH port
-            FromPort: 22
+        -   CidrIp: !Ref RdpInboundIp
+            Description: RDP port
+            FromPort: 3389
             IpProtocol: tcp
             # SourceSecurityGroupId: String
             # SourceSecurityGroupName: String
-            ToPort: 22
-
+            ToPort: 3389
 
 Outputs:
   OutputsInstanceId:
