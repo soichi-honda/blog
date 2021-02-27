@@ -7,36 +7,29 @@
 Parameters:
 # EC2
   AmiId:
-    Description: Input an ami-id. Default is the latest AmazonLinux2 AMI.
+    Description: Input an ami-id. Default is the latest AmazonLinux2 of quick start.
     Type: AWS::SSM::Parameter::Value<String>
-    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
+    Default: /aws/service/ami-windows-latest/Windows_Server-2019-English-Full-Base
   InstanceType:
     Description: Input an Instance type.
     Type: String
-    Default: t3.micro
+    Default: t3.small
   KeyPair:
-    Description: Select your key pair.
+    Description: Input your key pair.
     Type: "AWS::EC2::KeyPair::KeyName"
   InstanceName:
-    Description: Input a instance name.
+    Description: Input a instance name. Do not change as much as possible.
     Type: String
     Default: test
   SubnetId:
-    Description: Select your SubnetId.
+    Description: Input a SubnetId. Do not change as much as possible.
     Type: AWS::EC2::Subnet::Id
-  AttachPublicIpAddress:
-    Description: Set to true if you want to assign a public IP address, set to false if you don't.
-    Type: String
-    Default: false
-    AllowedValues:
-      - "true"
-      - "false"
 # SG
   VpcId:
-    Description: Select your VpcId.
+    Description: Input a handson name. Do not change as much as possible.
     Type: AWS::EC2::VPC::Id
-  SshInboundIp:
-    Description: Input an IP address you want to access with SSH. e.g. 0.0.0.0/0
+  RdpInboundIp:
+    Description: Input a IP Address you want to access from. e.g. 0.0.0.0/0
     Type: String
     Default: "0.0.0.0/0"
 
@@ -50,7 +43,6 @@ Metadata:
         Parameters: 
           - AmiId
           - SubnetId
-          - AttachPublicIpAddress
           - InstanceType
           - KeyPair
           - InstanceName
@@ -77,12 +69,12 @@ Resources:
       BlockDeviceMappings: 
         - DeviceName: /dev/xvda
           Ebs: 
-            VolumeSize: 8
+            VolumeSize: 30
             VolumeType: gp3
             Iops: 3000
             DeleteOnTermination: true
       NetworkInterfaces:
-        - AssociatePublicIpAddress: !Ref AttachPublicIpAddress
+        - AssociatePublicIpAddress: true
           DeleteOnTermination: true
           GroupSet: 
             - !Ref MySG
@@ -101,19 +93,10 @@ Resources:
       GroupDescription: !Sub Security Group attached to ${InstanceName}
       GroupName: !Sub sg_${InstanceName}
       SecurityGroupIngress:
-        -   CidrIp: !Ref SshInboundIp
-            Description: SSH port
-            FromPort: 22
+        -   CidrIp: !Ref RdpInboundIp
+            Description: RDP port
+            FromPort: 3389
             IpProtocol: tcp
             # SourceSecurityGroupId: String
             # SourceSecurityGroupName: String
-            ToPort: 22
-
-
-Outputs:
-  OutputsInstanceId:
-    Description: EC2 Instance ID
-    Value: !Ref MyInstance
-  OutputsSgId:
-    Description: SG ID
-    Value: !Ref MySG
+            ToPort: 3389
